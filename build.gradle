@@ -1,0 +1,119 @@
+plugins {
+  id "java"
+  id "maven-publish"
+  id "com.enonic.xp.base" version "3.6.1"
+  id "com.github.node-gradle.node" version "7.1.0"
+}
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+dependencies {
+  implementation "com.enonic.xp:core-api:${xpVersion}"
+  implementation "com.enonic.xp:portal-api:${xpVersion}"
+  implementation "org.freemarker:freemarker:2.3.34"
+  implementation "no.api.freemarker:freemarker-java8:3.0.3"
+
+  testImplementation "org.junit.jupiter:junit-jupiter-api:5.13.4"
+  testImplementation "org.mockito:mockito-core:5.18.0"
+  testImplementation "org.mockito:mockito-junit-jupiter:5.18.0"
+  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.13.4"
+}
+
+repositories {
+  mavenLocal()
+  mavenCentral()
+  xp.enonicRepo()
+  maven { url "https://repo.itemtest.no/releases" }
+}
+
+node {
+  // Whether to download and install a specific Node.js version or not
+  // If false, it will use the globally installed Node.js
+  // If true, it will download node using above parameters
+  // Note that npm is bundled with Node.js
+  download = true
+
+  // Version of node to download and install (only used if download is true)
+  // It will be unpacked in the workDir
+  version = "24.3.0"
+}
+
+processResources {
+  exclude "**/.gitkeep"
+  exclude "**/*.json"
+  exclude "**/*.ts"
+  exclude "**/*.tsx"
+}
+
+tasks.register("dev", Exec) {
+  if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    commandLine "cmd", "/c", "gradlew.bat", "deploy", "-t"
+  } else {
+    commandLine "./gradlew", "deploy", "-t"
+  }
+}
+
+tasks.register("npmBuild", NpmTask) {
+  args = [
+    "run",
+    "--silent",
+    "build"
+  ]
+  dependsOn npmInstall
+  environment = [
+    "FORCE_COLOR"          : "true",
+    "LOG_LEVEL_FROM_GRADLE": gradle.startParameter.logLevel.toString(),
+    "NODE_ENV"             : project.hasProperty("dev") || project.hasProperty("development") ? "development" : "production"
+  ]
+  inputs.dir "src/main/resources"
+  outputs.dir "build/resources/main"
+  outputs.upToDateWhen { false }
+}
+
+jar.dependsOn npmBuild
+
+tasks.register("npmCheck", NpmTask) {
+  dependsOn npmInstall
+  args = [
+    "run",
+    "check"
+  ]
+  environment = [
+    "FORCE_COLOR": "true",
+  ]
+}
+
+check.dependsOn npmCheck
+
+compileTestJava.dependsOn npmBuild
+
+tasks.test {
+  useJUnitPlatform()
+}
+
+tasks.withType(Copy).configureEach {
+  includeEmptyDirs = false
+}
+
+publishing {
+  repositories {
+    maven {
+      name = "itemtestRepository"
+      url = "https://repo.itemtest.no/releases"
+      credentials(PasswordCredentials)
+      authentication {
+        basic(BasicAuthentication)
+      }
+    }
+  }
+  publications {
+    maven(MavenPublication) {
+      from components.java
+      groupId group
+      artifactId projectName
+      version version
+    }
+  }
+}
