@@ -1,20 +1,22 @@
 package no.item.freemarker;
 
 import com.enonic.xp.portal.PortalRequest;
+import com.enonic.xp.portal.RenderMode;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.script.ScriptValue;
-import com.google.common.base.Throwables;
-import com.google.common.collect.Streams;
+
 import freemarker.core.Environment;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
-import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
 import java.util.Locale;
-import java.util.Optional;
 
 public class FreemarkerProcessor {
+  private final Logger logger = LoggerFactory.getLogger(FreemarkerProcessor.class);
   private final Configuration configuration;
   private final PortalRequest portalRequest;
 
@@ -35,8 +37,9 @@ public class FreemarkerProcessor {
       throw new IllegalArgumentException("Model must not contain a 'portal' member");
     }
 
+    StringWriter writer = new StringWriter();
+
     try {
-      StringWriter writer = new StringWriter();
       Template template = configuration.getTemplate(view.toString());
       Environment environment = template.createProcessingEnvironment(model.getMap(), writer);
       Locale locale = getLocaleFromPortalRequest();
@@ -44,11 +47,16 @@ public class FreemarkerProcessor {
         environment.setLocale(locale);
       }
       environment.process();
-
-      return writer.toString();
     } catch (final Exception e) {
-      throw handleError(e);
+      // Don't throw exception with the HTML debug handler. It will instead render the error as part of the HTML
+      if (configuration.getTemplateExceptionHandler() == TemplateExceptionHandler.HTML_DEBUG_HANDLER) {
+        logger.error("Error processing template: {}", e.getMessage(), e);
+      } else {
+        throw e;
+      }
     }
+
+    return writer.toString();
   }
 
   /**
@@ -63,8 +71,9 @@ public class FreemarkerProcessor {
       throw new IllegalArgumentException("Model must not contain a 'portal' member");
     }
 
+    StringWriter writer = new StringWriter();
+
     try {
-      StringWriter writer = new StringWriter();
       Template template = new Template(null, source, configuration);
       Environment environment = template.createProcessingEnvironment(model.getMap(), writer);
       Locale locale = getLocaleFromPortalRequest();
@@ -72,11 +81,14 @@ public class FreemarkerProcessor {
         environment.setLocale(locale);
       }
       environment.process();
-
-      return writer.toString();
     } catch (final Exception e) {
-      throw handleError(e);
+      // Throw exception on the live site, but allow rendering of HTML error message (done in writer) in Content Studio
+      if (portalRequest.getMode().equals(RenderMode.LIVE)) {
+        throw e;
+      }
     }
+
+    return writer.toString();
   }
 
   /**
@@ -107,21 +119,5 @@ public class FreemarkerProcessor {
     } catch (Exception ex) {
       return null;
     }
-  }
-
-  /**
-   * Pick out the TemplateException (which is the relevant one) and throw it if it exists
-   *
-   * @param e The exception
-   * @return An exception (preferably TemplateException)
-   */
-  private Throwable handleError(final Exception e) {
-    Optional<Throwable> templateProcessingException = Streams.findLast(
-      Throwables.getCausalChain(e)
-        .stream()
-        .filter(((throwable) -> throwable instanceof TemplateException))
-    );
-
-    return templateProcessingException.orElse(e);
   }
 }

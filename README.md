@@ -54,6 +54,29 @@ _src/main/resources/freemarker_implicit.ftl_ with this content:
 [#-- @ftlvariable name="portal" type="no.item.freemarker.FreemarkerPortalObject" --]
 ```
 
+### Configuration file
+
+You can configure the [Freemarker settings](https://freemarker.apache.org/docs/pgui_config_settings.html) by adding an
+_XP_HOME/config/freemarker.properties_ file.
+
+To preserve backwards compatibility in an existing project you can set the `incompatible_improvements` version like this:
+
+```properties
+incompatible_improvements=2.3.25
+```
+
+Developers should use the [HTML Debug Exception Handler](https://freemarker.apache.org/docs/pgui_config_errorhandling.html#autoid_44)
+in their local development environments.
+
+```properties
+template_exception_handler=html_debug
+```
+
+> [!CAUTION]
+> **Do not** use the `html_debug` exception handler in production!
+> It should only be used for development as it shows technical information about your system.
+
+
 ## Usage
 
 ### Render from template files
