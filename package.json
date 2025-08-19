@@ -1,0 +1,39 @@
+{
+  "name": "@item-enonic-types/lib-freemarker",
+  "description": "Type definitions for lib-freemarker",
+  "version": "2.1.0",
+  "license": "MIT",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "tsconfig.json"
+  ],
+  "devDependencies": {
+    "@changesets/cli": "^2.29.6",
+    "@enonic-types/core": "^7.15.3",
+    "@enonic-types/global": "^7.15.3",
+    "@swc/core": "^1.13.3",
+    "@types/node": "^24.3.0",
+    "concurrently": "^9.2.0",
+    "eslint": "^9.33.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "prettier": "^3.6.2",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.40.0"
+  },
+  "private": false,
+  "scripts": {
+    "build": "node tsup/anyServerFiles.js && npx tsup -d build/resources/main",
+    "check": "concurrently -c auto -g --timings npm:check:types npm:lint",
+    "check:types": "node tsup/anyServerFiles.js && npx tsc --noEmit -p src/main/resources/tsconfig.json",
+    "lint": "eslint --cache \"src/main/resources/**/*.ts\"",
+    "release": "npm run build",
+    "versioning": "npx changeset version && npm i --package-lock-only && NEW_VERSION=$(node -p \"require('./package.json').version\") && sed -i \"s/version.*/version = ${NEW_VERSION}/\" gradle.properties",
+    "prepublishOnly": "tsc --project src/main/resources/tsconfig.json --declarationDir dist --emitDeclarationOnly true --declaration true",
+    "postpublish": "rm -r ./dist"
+  }
+}
