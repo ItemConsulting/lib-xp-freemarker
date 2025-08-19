@@ -1,5 +1,6 @@
 package no.item.freemarker;
 
+import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.script.ScriptValue;
@@ -36,6 +37,9 @@ class FreemarkerProcessorTest {
   @Mock
   private PortalRequest portalRequest;
 
+  @Mock
+  private LocaleService localeService;
+
   @BeforeEach
   void init() {
     configuration = new Configuration(Configuration.VERSION_2_3_34);
@@ -44,7 +48,7 @@ class FreemarkerProcessorTest {
 
   @Test
   void shouldProcessInlineTemplateSuccessfully() throws Throwable {
-    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest);
+    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
 
     when(model.getMap()).thenReturn(Map.of("title", "Freemarker is better than Thymeleaf"));
 
@@ -55,7 +59,7 @@ class FreemarkerProcessorTest {
 
   @Test
   void shouldProcessResourceTemplateSuccessfully() throws Throwable {
-    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest);
+    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
     String templateContent = "<h1>${title}</h1>";
 
     when(loader.findTemplateSource(anyString())).thenReturn(source);
@@ -70,7 +74,7 @@ class FreemarkerProcessorTest {
 
   @Test
   void shouldThrowExceptionWhenModelContainsPortalField() {
-    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest);
+    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
 
     when(model.hasMember("portal")).thenReturn(true);
 

@@ -1,5 +1,6 @@
 package no.item.freemarker;
 
+import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.url.PortalUrlService;
 import com.enonic.xp.portal.view.ViewFunctionService;
@@ -38,13 +39,16 @@ class FreemarkerPortalObjectTest {
   private PortalUrlService urlService;
 
   @Mock
+  private LocaleService localeService;
+
+  @Mock
   private PortalRequest portalRequest;
 
   @BeforeEach
   void init() {
     configuration = new Configuration(Configuration.VERSION_2_3_34);
     configuration.setTemplateLoader(loader);
-    
+
     try {
       configuration.setSharedVariable("portal", new FreemarkerPortalObject(urlService, viewFunctionService, () -> portalRequest));
     } catch (TemplateModelException e) {
@@ -54,7 +58,7 @@ class FreemarkerPortalObjectTest {
 
   @Test
   void testLocalize() throws Throwable {
-    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest);
+    FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
 
     when(viewFunctionService.execute(any())).thenReturn("Freemarker is better than Thymeleaf");
     when(model.getMap()).thenReturn(Map.of());
