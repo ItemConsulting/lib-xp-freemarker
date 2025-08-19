@@ -18,7 +18,7 @@ repositories {
 }
 
 dependencies {
-  include "no.item:lib-xp-freemarker:0.0.1"
+  include "no.item:lib-xp-freemarker:2.1.0-SNAPSHOT"
 }
 ```
 
@@ -112,7 +112,7 @@ export function get(): Response {
 
 ### Render from inline strings
 
-Alternatively you can use `string` as the template.
+Alternatively you can use a `string` as the template.
 
 
 ```typescript
