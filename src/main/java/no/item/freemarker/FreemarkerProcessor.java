@@ -1,10 +1,10 @@
 package no.item.freemarker;
 
+import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.RenderMode;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.script.ScriptValue;
-
 import freemarker.core.Environment;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
@@ -13,16 +13,22 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Locale;
+import java.util.Set;
+
+import static java.util.stream.Collectors.toList;
 
 public class FreemarkerProcessor {
   private final Logger logger = LoggerFactory.getLogger(FreemarkerProcessor.class);
   private final Configuration configuration;
   private final PortalRequest portalRequest;
+  private final LocaleService localeService;
 
-  public FreemarkerProcessor(Configuration configuration, PortalRequest portalRequest) {
+  public FreemarkerProcessor(Configuration configuration, PortalRequest portalRequest, LocaleService localeService) {
     this.configuration = configuration;
     this.portalRequest = portalRequest;
+    this.localeService = localeService;
   }
 
   /**
@@ -114,10 +120,27 @@ public class FreemarkerProcessor {
   }
 
   private Locale getLocaleFromPortalRequest() {
-    try {
-      return portalRequest.getContent().getLanguage();
-    } catch (Exception ex) {
+    if (portalRequest == null) {
       return null;
     }
+
+    try {
+      if (portalRequest.getContent() != null) {
+        return portalRequest.getContent().getLanguage();
+      } else if (portalRequest.getSite() != null) {
+        return portalRequest.getSite().getLanguage();
+      } else if (portalRequest.getRawRequest().getHeader("Accept-Language") != null) {
+        String acceptLanguage = portalRequest.getRawRequest().getHeader("Accept-Language");
+
+        return Locale.filter(
+          Locale.LanguageRange.parse(acceptLanguage),
+          this.localeService.getLocales(portalRequest.getApplicationKey(), "i18n/phrases")
+        ).get(0);
+      }
+    } catch (Exception ex) {
+      // Do nothing, just return null
+    }
+
+    return null;
   }
 }

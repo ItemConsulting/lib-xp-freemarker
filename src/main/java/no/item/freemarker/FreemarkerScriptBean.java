@@ -1,6 +1,7 @@
 package no.item.freemarker;
 
 import com.enonic.xp.home.HomeDir;
+import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.url.PortalUrlService;
 import com.enonic.xp.portal.view.ViewFunctionService;
@@ -28,6 +29,7 @@ public class FreemarkerScriptBean implements ScriptBean {
   private final Logger logger = LoggerFactory.getLogger(FreemarkerScriptBean.class);
   private final Configuration configuration;
   private Supplier<PortalRequest> requestSupplier;
+  private Supplier<LocaleService> localeSupplier;
 
   public FreemarkerScriptBean() {
     configuration = new Configuration(Configuration.VERSION_2_3_34);
@@ -51,6 +53,7 @@ public class FreemarkerScriptBean implements ScriptBean {
   @Override
   public void initialize(BeanContext context) {
     this.requestSupplier = context.getBinding(PortalRequest.class);
+    this.localeSupplier = context.getService(LocaleService.class);
     ViewFunctionService viewFunctionService = context.getService(ViewFunctionService.class).get();
     ResourceService resourceService = context.getService(ResourceService.class).get();
     PortalUrlService urlService = context.getService(PortalUrlService.class).get();
@@ -66,7 +69,7 @@ public class FreemarkerScriptBean implements ScriptBean {
   }
 
   public FreemarkerProcessor newProcessor() {
-    return new FreemarkerProcessor(configuration, requestSupplier.get());
+    return new FreemarkerProcessor(configuration, requestSupplier.get(), localeSupplier.get());
   }
 
   private Optional<Properties> getPropertiesFromFile() {

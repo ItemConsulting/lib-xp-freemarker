@@ -196,12 +196,20 @@ When rendering components from regions in _pages_ and _layouts_ you can use the 
 
 ## Localization
 
-The template will use the `locale` of the **current content**. So you can now use the
-[special variables](https://freemarker.apache.org/docs/ref_specvar.html) `${.locale}` and `${.lang}` to access the
-"language tag" of the current content (without passing in any variable).
+This library will use the first `locale` it finds, checking in the following order:
 
-You also don't need to pass in a locale for `portal.localize()` unless you want a different locale then the current
-contents' locale.
+| Order | Source of `locale`                                                                          | Use case              |
+|------:|---------------------------------------------------------------------------------------------|-----------------------|
+|     1 | The `language` field of the current content                                                 | Normal content        |
+|     2 | The `language` field of the current site                                                    | E.g. the error page   |
+|     3 | The end users `"Accept-Language"` that matches a supported language in the _i18n_ directory | E.g. an admin tool    |
+|     4 | Default to `"en-US"`                                                                        | E.g. the main.js file |
+
+So you can use the [special variables](https://freemarker.apache.org/docs/ref_specvar.html) `${.locale}` and `${.lang}`
+to access the "language tag" resolved based on the list above.
+
+You also don't need to pass in a locale for `portal.localize()` unless you want a different locale then automatically
+selected locale.
 
 ```ftl
 <!doctype html>
