@@ -2,7 +2,9 @@
 
 This library lets you use [Apache Freemarker](https://freemarker.apache.org/)-templates with Enonic XP.
 
-[![](https://repo.itemtest.no/api/badge/latest/releases/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/releases/no/item/lib-xp-freemarker)
+[![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/snapshots/no/item/lib-xp-freemarker)
+[![](https://javadoc.io/badge2/no.item/lib-xp-freemarker/2.1.0-SNAPSHOT/javadoc.svg)](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/latest)
+[![](https://img.shields.io/npm/types/%40item-enonic-types%2Flib-freemarker)](https://www.npmjs.com/package/@item-enonic-types/lib-freemarker)
 
 <img src="./docs/icon.svg?sanitize=true" width="150">
 
@@ -156,7 +158,7 @@ export function get(): Response {
 ### The `portal` object
 
 The following utility functions are made available in the
-[portal object](./src/main/java/no/item/freemarker/FreemarkerPortalObject.java):
+[portal object](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/2.1.0-SNAPSHOT/raw/no/item/freemarker/FreemarkerPortalObject.html):
 
  - `portal.pageUrl()`
  - `portal.assetUrl()`

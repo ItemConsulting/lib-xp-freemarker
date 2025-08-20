@@ -1,5 +1,7 @@
+
 plugins {
   id "java"
+  id 'java-library'
   id "maven-publish"
   id "com.enonic.xp.base" version "3.6.1"
   id "com.github.node-gradle.node" version "7.1.0"
@@ -7,6 +9,11 @@ plugins {
 
 sourceCompatibility = JavaVersion.VERSION_11
 targetCompatibility = JavaVersion.VERSION_11
+
+java {
+  withJavadocJar()
+  withSourcesJar()
+}
 
 dependencies {
   implementation "com.enonic.xp:core-api:${xpVersion}"
@@ -118,4 +125,13 @@ publishing {
       version version
     }
   }
+}
+
+javadoc {
+  options.links(
+    'https://docs.oracle.com/en/java/javase/11/docs/api/',
+    'https://freemarker.apache.org/docs/api/'
+  )
+
+  dependsOn npmBuild
 }
