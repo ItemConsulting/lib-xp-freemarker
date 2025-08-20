@@ -241,7 +241,7 @@ If you need another `locale` to be used (han that of the current content), you c
 To build the project, run the following command
 
 ```bash
-enonic project build
+./gradlew build
 ```
 
 You will find the jar-file at _./build/libs/item.jar_
@@ -259,3 +259,7 @@ To deploy to a local sandbox, run the following command
 ```bash
 ./gradlew publish -P com.enonic.xp.app.production=true
 ```
+
+## Acknowledgments
+
+This library was inspired by the [lib-freemarker library by TINE IKT](https://github.com/tineikt/xp-lib-freemarker/).

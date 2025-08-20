@@ -101,7 +101,9 @@ publishing {
   repositories {
     maven {
       name = "itemtestRepository"
-      url = "https://repo.itemtest.no/releases"
+      url = version.endsWith('SNAPSHOT')
+        ? "https://repo.itemtest.no/snapshots"
+        : "https://repo.itemtest.no/releases"
       credentials(PasswordCredentials)
       authentication {
         basic(BasicAuthentication)

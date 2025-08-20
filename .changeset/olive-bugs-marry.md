@@ -2,4 +2,4 @@
 "@item-enonic-types/lib-freemarker": minor
 ---
 
-Add functionality to render Freemarker from resoures or inline strings
+Add functionality to render Freemarker from resources or inline strings
