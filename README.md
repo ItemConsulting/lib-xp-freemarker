@@ -243,14 +243,14 @@ If you need another `locale` to be used (han that of the current content), you c
 To build the project, run the following command
 
 ```bash
-./gradlew build
+enonic project build
 ```
 
-You will find the jar-file at _./build/libs/item.jar_
+You will find the jar-file at _./build/libs/lib-xp-freemarker-[version].jar_
 
 ### Deploying locally
 
-To deploy to a local sandbox, run the following command
+Deploy locally for testing purposes:
 
 ```bash
 ./gradlew publishToMavenLocal
