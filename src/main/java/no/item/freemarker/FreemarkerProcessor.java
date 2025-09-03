@@ -48,7 +48,7 @@ public class FreemarkerProcessor {
   /**
    * Process a template found in the build
    *
-   * @param view  A ResourceKey pointing to the view
+   * @param view A URI pointing to the view (Most likely {@link ResourceKey}.getUri() object)
    * @param model A Map representing the model
    * @return The processed template as a string
    * @throws IOException If an error occurs reading the template

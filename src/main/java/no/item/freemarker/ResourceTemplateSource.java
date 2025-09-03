@@ -35,6 +35,7 @@ public class ResourceTemplateSource implements Closeable {
 
   /**
    * Get a reader for reading the template content.
+   *
    * @return the reader for reading the template content.
    */
   public Reader getReader() {
@@ -43,6 +44,7 @@ public class ResourceTemplateSource implements Closeable {
 
   /**
    * Close the reader.
+   *
    * @throws IOException if an error occurs closing the reader.
    */
   @Override

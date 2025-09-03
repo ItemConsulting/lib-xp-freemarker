@@ -32,7 +32,7 @@ export function render<Model>(view: string, model: Model, name: string): string;
 /**
  * Renders a Freemarker template with the provided model and configuration.
  *
- * @param view A ResourceKey pointing to the template file
+ * @param view A ResourceKey pointing to the template file or a URL that the template loader can resolve
  * @param model The data model to be used in the template
  * @returns The rendered template as a string
  */
