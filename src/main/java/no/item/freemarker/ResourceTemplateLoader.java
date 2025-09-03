@@ -10,9 +10,16 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Optional;
 
+/**
+ * A {@link TemplateLoader} that loads templates from XP resources.
+ */
 public class ResourceTemplateLoader implements TemplateLoader {
   private final ResourceService resourceService;
 
+  /**
+   * Create a new {@link ResourceTemplateLoader} with the given {@link ResourceService}.
+   * @param resourceService to use for finding resources.
+   */
   public ResourceTemplateLoader(ResourceService resourceService) {
     this.resourceService = resourceService;
   }

@@ -25,12 +25,28 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
 
+/**
+ * A script bean implementation that provides Freemarker template processing capabilities
+ * for Enonic XP applications. This class manages the Freemarker configuration, integrates
+ * with XP services, and provides template processing functionality through the portal context.
+ *
+ * <p>The bean automatically configures Freemarker with sensible defaults and allows for
+ * additional configuration through a "freemarker.properties" file in the XP home directory.
+ * It integrates with XP's portal services to provide template access to portal URLs,
+ * view functions, and other XP-specific functionality.</p>
+ */
 public class FreemarkerScriptBean implements ScriptBean {
   private final Logger logger = LoggerFactory.getLogger(FreemarkerScriptBean.class);
   private final Configuration configuration;
   private Supplier<PortalRequest> requestSupplier;
   private Supplier<LocaleService> localeSupplier;
 
+  /**
+   * Constructs a new FreemarkerScriptBean and initializes the Freemarker configuration.
+   * Sets up default configuration settings including UTF-8 encoding, auto-detect tag syntax,
+   * and Java 8 object wrapper. Also attempts to load additional configuration from a
+   * "freemarker.properties" file if present in the XP home directory.
+   */
   public FreemarkerScriptBean() {
     configuration = new Configuration(Configuration.VERSION_2_3_34);
     configuration.setDefaultEncoding("UTF-8");
@@ -50,6 +66,14 @@ public class FreemarkerScriptBean implements ScriptBean {
     });
   }
 
+  /**
+   * Initializes the FreemarkerScriptBean with the provided bean context.
+   * Sets up service suppliers, creates the portal object, and configures the template loader.
+   * This method is called by the XP framework during bean initialization.
+   *
+   * @param context The bean context containing service bindings and dependencies
+   * @throws RuntimeException If there's an error setting up the portal object or template loader
+   */
   @Override
   public void initialize(BeanContext context) {
     this.requestSupplier = context.getBinding(PortalRequest.class);
@@ -59,7 +83,7 @@ public class FreemarkerScriptBean implements ScriptBean {
     PortalUrlService urlService = context.getService(PortalUrlService.class).get();
 
     try {
-      FreemarkerPortalObject portal = new FreemarkerPortalObject(urlService, viewFunctionService, this.requestSupplier);
+      FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(urlService, viewFunctionService, this.requestSupplier);
 
       configuration.setSharedVariable("portal", portal);
       configuration.setTemplateLoader(new ResourceTemplateLoader(resourceService));
@@ -68,10 +92,35 @@ public class FreemarkerScriptBean implements ScriptBean {
     }
   }
 
+  /**
+   * Get the current configuration for this instance of Freemarker.
+   * @return The current configuration for this instance of Freemarker.
+   */
+  public Configuration getConfiguration() {
+    return configuration;
+  }
+
+  /**
+   * Set the portal object for use in templates.
+   * @param portal The portal object to use in templates.
+   * @throws TemplateModelException If the shared variable cannot be set.
+   */
+  public void setPortalObject(FreemarkerPortalObject portal) throws TemplateModelException {
+    configuration.setSharedVariable("portal", portal);
+  }
+
+  /**
+   * Create a new {@link FreemarkerProcessor} with the current configuration and portal request.
+   * @return A new FreemarkerProcessor instance.
+   */
   public FreemarkerProcessor newProcessor() {
     return new FreemarkerProcessor(configuration, requestSupplier.get(), localeSupplier.get());
   }
 
+  /**
+   * Load configuration properties from the "freemarker.properties" file in the XP home directory.
+   * @return An Optional containing the loaded properties, or empty if the file does not exist.
+   */
   private Optional<Properties> getPropertiesFromFile() {
     final File xpHome = HomeDir.get().toFile();
     Path path = Paths.get( xpHome.getAbsolutePath(), "config", "freemarker.properties" );
