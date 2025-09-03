@@ -2,6 +2,7 @@
 
 This library lets you use [Apache Freemarker](https://freemarker.apache.org/)-templates with Enonic XP.
 
+![Build badge](https://github.com/ItemConsulting/lib-xp-freemarker/actions/workflows/main.yml/badge.svg)
 [![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/snapshots/no/item/lib-xp-freemarker)
 [![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker?name=javadoc)](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/latest)
 [![](https://img.shields.io/npm/types/%40item-enonic-types%2Flib-freemarker)](https://www.npmjs.com/package/@item-enonic-types/lib-freemarker)
