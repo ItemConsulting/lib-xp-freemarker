@@ -29,9 +29,6 @@ class FreemarkerProcessorTest {
   private ResourceTemplateLoader loader;
 
   @Mock
-  private ResourceKey view;
-
-  @Mock
   private ResourceTemplateSource source;
 
   @Mock
@@ -52,7 +49,7 @@ class FreemarkerProcessorTest {
 
     when(model.getMap()).thenReturn(Map.of("title", "Freemarker is better than Thymeleaf"));
 
-    String result = freemarkerProcessor.process("<h1>${title}</h1>", model);
+    String result = freemarkerProcessor.processInline("<h1>${title}</h1>", model, "inline-template-text.ftl");
 
     assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
   }
@@ -66,7 +63,7 @@ class FreemarkerProcessorTest {
     when(loader.getReader(any(), anyString())).thenReturn(new StringReader(templateContent));
     when(model.getMap()).thenReturn(Map.of("title", "Freemarker is better than Thymeleaf"));
 
-    String result = freemarkerProcessor.process(view, model);
+    String result = freemarkerProcessor.process("myapp:myresource", model);
 
     assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
   }
@@ -79,11 +76,11 @@ class FreemarkerProcessorTest {
     when(model.hasMember("portal")).thenReturn(true);
 
     assertThrows(IllegalArgumentException.class, () -> {
-      freemarkerProcessor.process("<h1>Test</h1>", model);
+      freemarkerProcessor.processInline("<h1>Test</h1>", model, "throwing-template.ftl");
     });
 
     assertThrows(IllegalArgumentException.class, () -> {
-      freemarkerProcessor.process(view, model);
+      freemarkerProcessor.process("myapp:myresource", model);
     });
 
     verify(model, times(2)).hasMember("portal");

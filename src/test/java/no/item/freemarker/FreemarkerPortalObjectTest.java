@@ -30,9 +30,6 @@ class FreemarkerPortalObjectTest {
   private ScriptValue model;
 
   @Mock
-  private ResourceTemplateSource source;
-
-  @Mock
   private ViewFunctionService viewFunctionService;
 
   @Mock
@@ -50,7 +47,7 @@ class FreemarkerPortalObjectTest {
     configuration.setTemplateLoader(loader);
 
     try {
-      configuration.setSharedVariable("portal", new FreemarkerPortalObject(urlService, viewFunctionService, () -> portalRequest));
+      configuration.setSharedVariable("portal", new FreemarkerPortalObjectImpl(urlService, viewFunctionService, () -> portalRequest));
     } catch (TemplateModelException e) {
       throw new RuntimeException(e);
     }
@@ -62,7 +59,7 @@ class FreemarkerPortalObjectTest {
 
     when(viewFunctionService.execute(any())).thenReturn("Freemarker is better than Thymeleaf");
     when(model.getMap()).thenReturn(Map.of());
-    String result = freemarkerProcessor.process("<h1>${portal.localize('article.title')}</h1>", model);
+    String result = freemarkerProcessor.processInline("<h1>${portal.localize('article.title')}</h1>", model, "localize-test.ftl");
 
     assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
   }

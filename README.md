@@ -130,7 +130,7 @@ type FreemarkerParams = {
 
 export function get(): Response {
   const content = getContent()!;
-
+  const virtualTemplateName = "my-inline-template.ftl";
   const view = `
     [#import "/site/utils/footer.ftl" as Footer]
 
@@ -150,7 +150,7 @@ export function get(): Response {
   };
 
   return {
-    body: render<FreemarkerParams>(view, model),
+    body: render<FreemarkerParams>(view, model, virtualTemplateName),
   };
 };
 ```
@@ -181,6 +181,10 @@ The portal-functions can be used within interpolations (`${}`). Example:
   ${portal.localize("article.nextPage")}
 </a>
 ```
+
+> [!WARNING]
+> Always use the [`?no_esc`](https://freemarker.apache.org/docs/ref_builtins_string.html#ref_builtin_no_esc) built-in
+> with `portal.processHtml()`. It prevents auto-escaping the markup if an output format is set.
 
 ### The `portal.component` directive
 
