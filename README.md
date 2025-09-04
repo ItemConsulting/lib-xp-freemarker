@@ -18,10 +18,11 @@ To install this library you need to add a new dependency to your app's build.gra
 ```groovy
 repositories {
   maven { url "https://repo.itemtest.no/releases" }
+  maven { url "https://repo.itemtest.no/snapshots" }
 }
 
 dependencies {
-  include "no.item:lib-xp-freemarker:2.1.0-SNAPSHOT"
+  include "no.item:lib-xp-freemarker:3.0.0-SNAPSHOT"
 }
 ```
 
