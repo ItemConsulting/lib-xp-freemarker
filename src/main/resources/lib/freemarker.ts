@@ -20,7 +20,7 @@ declare class FreemarkerService {
 const service = __.newBean<FreemarkerService>("no.item.freemarker.FreemarkerScriptBean");
 
 /**
- * Renders a Freemarker template string with the provided model and configuration.
+ * Renders a FreeMarker template string with the provided model and configuration.
  *
  * @param view The template content as a string
  * @param model The data model to be used in the template
@@ -30,7 +30,7 @@ const service = __.newBean<FreemarkerService>("no.item.freemarker.FreemarkerScri
 export function render<Model>(view: string, model: Model, name: string): string;
 
 /**
- * Renders a Freemarker template with the provided model and configuration.
+ * Renders a FreeMarker template with the provided model and configuration.
  *
  * @param view A ResourceKey pointing to the template file or a URL that the template loader can resolve
  * @param model The data model to be used in the template
@@ -39,7 +39,7 @@ export function render<Model>(view: string, model: Model, name: string): string;
 export function render<Model>(view: ResourceKey | string, model: Model): string;
 
 /**
- * Renders a Freemarker template with the provided model and configuration.
+ * Renders a FreeMarker template with the provided model and configuration.
  *
  * @param view Either a ResourceKey pointing to a template file or the template content as a string
  * @param model The data model to be used in the template
@@ -79,7 +79,7 @@ export function getSource(
 }
 
 /**
- * Returns the current configuration for the Freemarker service.
+ * Returns the current configuration for the FreeMarker service.
  */
 export function getConfiguration(): Configuration {
   return service.getConfiguration();

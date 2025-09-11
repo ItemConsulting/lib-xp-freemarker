@@ -1,6 +1,6 @@
-# Freemarker for Enonic XP
+# FreeMarker for Enonic XP
 
-This library lets you use [Apache Freemarker](https://freemarker.apache.org/)-templates with Enonic XP.
+This library lets you use [Apache FreeMarker](https://freemarker.apache.org/)-templates with Enonic XP.
 
 ![Build badge](https://github.com/ItemConsulting/lib-xp-freemarker/actions/workflows/main.yml/badge.svg)
 [![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/snapshots/no/item/lib-xp-freemarker)
@@ -60,7 +60,7 @@ _src/main/resources/freemarker_implicit.ftl_ with this content:
 
 ### Configuration file
 
-You can configure the [Freemarker settings](https://freemarker.apache.org/docs/pgui_config_settings.html) by adding an
+You can configure the [FreeMarker settings](https://freemarker.apache.org/docs/pgui_config_settings.html) by adding an
 _XP_HOME/config/freemarker.properties_ file.
 
 To preserve backwards compatibility in an existing project you can set the `incompatible_improvements` version like this:
@@ -93,7 +93,7 @@ import { render } from "/lib/freemarker";
 import { getContent } from "/lib/xp/portal";
 import type { Response } from "@enonic-types/core";
 
-type FreemarkerParams = {
+type FreeMarkerParams = {
   title: string;
   text: string | undefined;
 }
@@ -103,13 +103,13 @@ const view = resolve("article.ftl");
 export function get(): Response {
   const content = getContent()!;
 
-  const model: FreemarkerParams = {
+  const model: FreeMarkerParams = {
     title: content.data.title,
     text: content.data.text,
   };
 
   return {
-    body: render<FreemarkerParams>(view, model),
+    body: render<FreeMarkerParams>(view, model),
   };
 };
 ```
@@ -124,16 +124,14 @@ import { render } from "/lib/freemarker";
 import { getContent } from "/lib/xp/portal";
 import type { Response } from "@enonic-types/core";
 
-type FreemarkerParams = {
+type FreeMarkerParams = {
   title: string;
   text: string | undefined;
   year: string;
 }
 
-export function get(): Response {
-  const content = getContent()!;
-  const virtualTemplateName = "my-inline-template.ftl";
-  const view = `
+// The FreeMarker template as a string. Notice how the $ needs to be escaped.
+const view = `
     [#import "/site/utils/footer.ftl" as Footer]
 
     <h1>\${title}</h1>
@@ -145,14 +143,18 @@ export function get(): Response {
     [@Footer.render year=year /]
   `;
 
-  const model: FreemarkerParams = {
+export function get(): Response {
+  const content = getContent()!;
+  const virtualTemplateName = "my-inline-template.ftl";
+
+  const model: FreeMarkerParams = {
     title: content.data.title,
     text: content.data.text,
     year: "2025"
   };
 
   return {
-    body: render<FreemarkerParams>(view, model, virtualTemplateName),
+    body: render<FreeMarkerParams>(view, model, virtualTemplateName),
   };
 };
 ```

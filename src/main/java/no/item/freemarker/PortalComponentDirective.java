@@ -11,7 +11,7 @@ import java.io.Writer;
 import java.util.Map;
 
 /**
- * A directive that can be used in Freemarker templates to include an XP component based on the path.
+ * A directive that can be used in FreeMarker templates to include an XP component based on the path.
  */
 public class PortalComponentDirective implements TemplateDirectiveModel {
   private static final String PARAM_PATH = "path";

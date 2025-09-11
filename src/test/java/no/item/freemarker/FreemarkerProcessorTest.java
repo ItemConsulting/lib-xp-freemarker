@@ -47,11 +47,11 @@ class FreemarkerProcessorTest {
   void shouldProcessInlineTemplateSuccessfully() throws Throwable {
     FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
 
-    when(model.getMap()).thenReturn(Map.of("title", "Freemarker is better than Thymeleaf"));
+    when(model.getMap()).thenReturn(Map.of("title", "FreeMarker is better than Thymeleaf"));
 
     String result = freemarkerProcessor.processInline("<h1>${title}</h1>", model, "inline-template-text.ftl");
 
-    assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
+    assertEquals("<h1>FreeMarker is better than Thymeleaf</h1>", result);
   }
 
   @Test
@@ -61,11 +61,11 @@ class FreemarkerProcessorTest {
 
     when(loader.findTemplateSource(anyString())).thenReturn(source);
     when(loader.getReader(any(), anyString())).thenReturn(new StringReader(templateContent));
-    when(model.getMap()).thenReturn(Map.of("title", "Freemarker is better than Thymeleaf"));
+    when(model.getMap()).thenReturn(Map.of("title", "FreeMarker is better than Thymeleaf"));
 
     String result = freemarkerProcessor.process("myapp:myresource", model);
 
-    assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
+    assertEquals("<h1>FreeMarker is better than Thymeleaf</h1>", result);
   }
 
 

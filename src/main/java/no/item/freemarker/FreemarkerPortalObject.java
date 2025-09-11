@@ -5,7 +5,7 @@ import freemarker.template.TemplateDirectiveModel;
 import java.util.List;
 
 /**
- * This interface represents the portal object that can be used in Freemarker templates.
+ * This interface represents the portal object that can be used in FreeMarker templates.
  */
 public interface FreemarkerPortalObject {
   /**

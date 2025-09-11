@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 /**
- * The default portal object that can be used in Freemarker templates.
+ * The default portal object that can be used in FreeMarker templates.
  */
 public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
   private final TemplateDirectiveModel component = new PortalComponentDirective();
@@ -27,7 +27,7 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
   private final Supplier<PortalRequest> requestSupplier;
 
   /**
-   * This object provides portal-related functionality for Freemarker templates,
+   * This object provides portal-related functionality for FreeMarker templates,
    * including URL generation, localization, and HTML processing capabilities.
    *
    * @param portalUrlServiceSupplier Service for URL generation.
