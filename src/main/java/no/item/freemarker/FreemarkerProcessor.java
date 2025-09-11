@@ -22,7 +22,7 @@ import java.util.Set;
 import static java.util.stream.Collectors.toList;
 
 /**
- * A processor for rendering Freemarker templates.
+ * A processor for rendering FreeMarker templates.
  */
 public class FreemarkerProcessor {
   private final Logger logger = LoggerFactory.getLogger(FreemarkerProcessor.class);
@@ -32,10 +32,10 @@ public class FreemarkerProcessor {
 
   /**
    * Constructs a new FreemarkerProcessor with the specified configuration and services.
-   * This processor is responsible for rendering Freemarker templates with the provided
+   * This processor is responsible for rendering FreeMarker templates with the provided
    * configuration, portal context, and locale support.
    *
-   * @param configuration the Freemarker configuration containing template settings and directives
+   * @param configuration the FreeMarker configuration containing template settings and directives
    * @param portalRequest the portal request context providing access to content, site, and request information
    * @param localeService the service for retrieving available locales and internationalization support
    */

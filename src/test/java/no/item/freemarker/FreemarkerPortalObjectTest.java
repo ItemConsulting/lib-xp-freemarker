@@ -47,7 +47,7 @@ class FreemarkerPortalObjectTest {
     configuration.setTemplateLoader(loader);
 
     try {
-      configuration.setSharedVariable("portal", new FreemarkerPortalObjectImpl(urlService, viewFunctionService, () -> portalRequest));
+      configuration.setSharedVariable("portal", new FreemarkerPortalObjectImpl(() -> urlService, () -> viewFunctionService, () -> portalRequest));
     } catch (TemplateModelException e) {
       throw new RuntimeException(e);
     }
@@ -57,10 +57,10 @@ class FreemarkerPortalObjectTest {
   void testLocalize() throws Throwable {
     FreemarkerProcessor freemarkerProcessor = new FreemarkerProcessor(configuration, portalRequest, localeService);
 
-    when(viewFunctionService.execute(any())).thenReturn("Freemarker is better than Thymeleaf");
+    when(viewFunctionService.execute(any())).thenReturn("FreeMarker is better than Thymeleaf");
     when(model.getMap()).thenReturn(Map.of());
     String result = freemarkerProcessor.processInline("<h1>${portal.localize('article.title')}</h1>", model, "localize-test.ftl");
 
-    assertEquals("<h1>Freemarker is better than Thymeleaf</h1>", result);
+    assertEquals("<h1>FreeMarker is better than Thymeleaf</h1>", result);
   }
 }

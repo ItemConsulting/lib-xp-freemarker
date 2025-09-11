@@ -26,11 +26,11 @@ import java.util.Properties;
 import java.util.function.Supplier;
 
 /**
- * A script bean implementation that provides Freemarker template processing capabilities
- * for Enonic XP applications. This class manages the Freemarker configuration, integrates
+ * A script bean implementation that provides FreeMarker template processing capabilities
+ * for Enonic XP applications. This class manages the FreeMarker configuration, integrates
  * with XP services, and provides template processing functionality through the portal context.
  *
- * <p>The bean automatically configures Freemarker with sensible defaults and allows for
+ * <p>The bean automatically configures FreeMarker with sensible defaults and allows for
  * additional configuration through a "freemarker.properties" file in the XP home directory.
  * It integrates with XP's portal services to provide template access to portal URLs,
  * view functions, and other XP-specific functionality.</p>
@@ -42,7 +42,7 @@ public class FreemarkerScriptBean implements ScriptBean {
   private Supplier<LocaleService> localeSupplier;
 
   /**
-   * Constructs a new FreemarkerScriptBean and initializes the Freemarker configuration.
+   * Constructs a new FreemarkerScriptBean and initializes the FreeMarker configuration.
    * Sets up default configuration settings including UTF-8 encoding, auto-detect tag syntax,
    * and Java 8 object wrapper. Also attempts to load additional configuration from a
    * "freemarker.properties" file if present in the XP home directory.
@@ -78,23 +78,23 @@ public class FreemarkerScriptBean implements ScriptBean {
   public void initialize(BeanContext context) {
     this.requestSupplier = context.getBinding(PortalRequest.class);
     this.localeSupplier = context.getService(LocaleService.class);
-    ViewFunctionService viewFunctionService = context.getService(ViewFunctionService.class).get();
-    ResourceService resourceService = context.getService(ResourceService.class).get();
-    PortalUrlService urlService = context.getService(PortalUrlService.class).get();
+    Supplier<ViewFunctionService> viewFunctionServiceSupplier = context.getService(ViewFunctionService.class);
+    Supplier<ResourceService> resourceServiceSupplier = context.getService(ResourceService.class);
+    Supplier<PortalUrlService> portalUrlServiceSupplier = context.getService(PortalUrlService.class);
 
     try {
-      FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(urlService, viewFunctionService, this.requestSupplier);
+      FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(portalUrlServiceSupplier, viewFunctionServiceSupplier, this.requestSupplier);
 
       configuration.setSharedVariable("portal", portal);
-      configuration.setTemplateLoader(new ResourceTemplateLoader(resourceService));
+      configuration.setTemplateLoader(new ResourceTemplateLoader(resourceServiceSupplier));
     } catch (TemplateModelException e) {
       throw new RuntimeException(e);
     }
   }
 
   /**
-   * Get the current configuration for this instance of Freemarker.
-   * @return The current configuration for this instance of Freemarker.
+   * Get the current configuration for this instance of FreeMarker.
+   * @return The current configuration for this instance of FreeMarker.
    */
   public Configuration getConfiguration() {
     return configuration;
