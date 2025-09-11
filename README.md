@@ -162,24 +162,16 @@ export function get(): Response {
 The following utility functions are made available in the
 [portal object](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/2.1.0-SNAPSHOT/raw/no/item/freemarker/FreemarkerPortalObject.html):
 
- - `portal.pageUrl()`
  - `portal.assetUrl()`
- - `portal.imageUrl()`
- - `portal.attachmentUrl()`
- - `portal.componentUrl()`
- - `portal.serviceUrl()`
- - `portal.loginUrl()`
- - `portal.logoutUrl()`
  - `portal.localize()`
  - `portal.processHtml()`
- - `portal.imagePlaceholder()`
 
 The portal-functions can be used within interpolations (`${}`). Example:
 
 ```ftl
-[#-- @ftlvariable name="nextPageId" type="String" --]
+[#-- @ftlvariable name="nextPageUrl" type="String" --]
 
-<a href="${portal.pageUrl(nextPageId)}">
+<a href="${nextPageUrl}">
   ${portal.localize("article.nextPage")}
 </a>
 ```

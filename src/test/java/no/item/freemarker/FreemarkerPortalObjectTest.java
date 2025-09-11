@@ -47,7 +47,7 @@ class FreemarkerPortalObjectTest {
     configuration.setTemplateLoader(loader);
 
     try {
-      configuration.setSharedVariable("portal", new FreemarkerPortalObjectImpl(urlService, viewFunctionService, () -> portalRequest));
+      configuration.setSharedVariable("portal", new FreemarkerPortalObjectImpl(() -> urlService, () -> viewFunctionService, () -> portalRequest));
     } catch (TemplateModelException e) {
       throw new RuntimeException(e);
     }

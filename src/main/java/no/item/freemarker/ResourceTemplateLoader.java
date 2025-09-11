@@ -9,19 +9,20 @@ import freemarker.cache.TemplateLoader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 /**
  * A {@link TemplateLoader} that loads templates from XP resources.
  */
 public class ResourceTemplateLoader implements TemplateLoader {
-  private final ResourceService resourceService;
+  private final Supplier<ResourceService> resourceServiceSupplier;
 
   /**
    * Create a new {@link ResourceTemplateLoader} with the given {@link ResourceService}.
-   * @param resourceService to use for finding resources.
+   * @param resourceServiceSupplier to use for finding resources.
    */
-  public ResourceTemplateLoader(ResourceService resourceService) {
-    this.resourceService = resourceService;
+  public ResourceTemplateLoader(Supplier<ResourceService> resourceServiceSupplier) {
+    this.resourceServiceSupplier = resourceServiceSupplier;
   }
 
   @Override
@@ -53,9 +54,10 @@ public class ResourceTemplateLoader implements TemplateLoader {
       return Optional.empty();
     }
 
+    ResourceService service = resourceServiceSupplier.get();
     ApplicationKey applicationKey = ApplicationKey.from(parts[0]);
-    ResourceKeys keys = resourceService.findFiles(applicationKey, parts[1]);
+    ResourceKeys keys = service.findFiles(applicationKey, parts[1]);
 
-    return Optional.ofNullable(keys.get(0)).map(this.resourceService::getResource);
+    return Optional.ofNullable(keys.get(0)).map(service::getResource);
   }
 }
