@@ -196,6 +196,13 @@ When rendering components from regions in _pages_ and _layouts_ you can use the 
 </div>
 ```
 
+If you are creating a view to preview [fragments](https://developer.enonic.com/docs/xp/stable/cms/pages/fragments),
+you can use the `portal.component` directive like this:
+
+```ftl
+[@portal.component path="fragment" /]
+```
+
 ## Localization
 
 This library will use the first `locale` it finds, checking in the following order:
@@ -260,6 +267,13 @@ Deploy locally for testing purposes:
 
 ```bash
 ./gradlew publish -P com.enonic.xp.app.production=true
+```
+
+## Publish types to npm
+
+```bash
+npm publish
+# npm publish --tag beta
 ```
 
 ## Acknowledgments
