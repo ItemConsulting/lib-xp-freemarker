@@ -162,9 +162,8 @@ export function get(): Response {
 ### The `portal` object
 
 The following utility functions are made available in the
-[portal object](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/2.1.0-SNAPSHOT/raw/no/item/freemarker/FreemarkerPortalObject.html):
+[portal object](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/3.0.0-SNAPSHOT/raw/no/item/freemarker/FreemarkerPortalObject.html):
 
- - `portal.assetUrl()`
  - `portal.localize()`
  - `portal.processHtml()`
 
