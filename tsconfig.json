@@ -8,9 +8,7 @@
   // Specifies an array of filenames or patterns to include in the program.
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
-  "include": [
-    "**/*.ts"
-  ],
+  "include": ["**/*.ts"],
 
   // Specifies an array of filenames or patterns that should be skipped when
   // resolving include.
@@ -22,7 +20,7 @@
   // codebase - it simply changes what the include setting finds.
   "exclude": [
     "**/*.d.ts",
-    "src/**/*.*", // Avoid Enonic XP source files
+    "src/**/*.*" // Avoid Enonic XP source files
   ],
 
   "compilerOptions": {
@@ -42,9 +40,6 @@
     // If types is specified, only packages listed will be included in the global scope.
     // This feature differs from typeRoots in that it is about specifying only the exact
     // types you want included, whereas typeRoots supports saying you want particular folders.
-    "types": [
-      "node",
-      "@itemconsulting/xp-storybook-utils/global"
-    ],
-  },
+    "types": ["node", "@itemconsulting/xp-storybook-utils/global"]
+  }
 }

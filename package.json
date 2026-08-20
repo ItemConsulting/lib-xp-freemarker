@@ -17,18 +17,15 @@
     "url": "git+https://github.com/ItemConsulting/lib-xp-freemarker.git"
   },
   "devDependencies": {
-    "@changesets/cli": "^2.29.7",
-    "@enonic-types/global": "^7.15.4",
-    "@swc/core": "^1.13.5",
+    "@biomejs/biome": "^2.5.9",
+    "@changesets/cli": "^3.0.1",
+    "@enonic-types/global": "^7.12.0",
+    "@swc/core": "^1.16.1",
     "@types/node": "^24.3.1",
-    "concurrently": "^9.2.1",
-    "eslint": "^9.35.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
-    "prettier": "^3.6.2",
-    "tsup": "^8.5.0",
-    "typescript": "^5.9.2",
-    "typescript-eslint": "^8.43.0"
+    "concurrently": "^10.0.5",
+    "glob": "^13.0.6",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "@enonic-types/core": "*"
@@ -42,7 +39,7 @@
     "build": "node tsup/anyServerFiles.js && npx tsup -d build/resources/main",
     "check": "concurrently -c auto -g --timings npm:check:types npm:lint",
     "check:types": "node tsup/anyServerFiles.js && npx tsc --noEmit -p src/main/resources/tsconfig.json",
-    "lint": "eslint --cache \"src/main/resources/**/*.ts\"",
+    "lint": "biome check --write",
     "release": "npm run build",
     "versioning": "npx changeset version && npm i --package-lock-only && NEW_VERSION=$(node -p \"require('./package.json').version\") && sed -i \"s/version.*/version = ${NEW_VERSION}/\" gradle.properties",
     "prepublishOnly": "tsc --project src/main/resources/tsconfig.json --declarationDir dist --emitDeclarationOnly true --declaration true",

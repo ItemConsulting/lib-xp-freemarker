@@ -1,9 +1,8 @@
-
 plugins {
   id "java"
   id 'java-library'
   id "maven-publish"
-  id "com.enonic.xp.base" version "3.6.1"
+  id "com.enonic.xp.base" version "3.6.2"
   id "com.github.node-gradle.node" version "7.1.0"
 }
 
@@ -36,15 +35,8 @@ repositories {
 }
 
 node {
-  // Whether to download and install a specific Node.js version or not
-  // If false, it will use the globally installed Node.js
-  // If true, it will download node using above parameters
-  // Note that npm is bundled with Node.js
   download = true
-
-  // Version of node to download and install (only used if download is true)
-  // It will be unpacked in the workDir
-  version = "24.3.0"
+  version = "24.18.0"
 }
 
 processResources {

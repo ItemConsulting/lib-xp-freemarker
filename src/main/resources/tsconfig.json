@@ -8,9 +8,7 @@
   // Specifies an array of filenames or patterns to include in the program.
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
-  "include": [
-    "./**/*.ts",
-  ],
+  "include": ["./**/*.ts"],
 
   // Specifies an array of filenames or patterns that should be skipped when
   // resolving include.
@@ -23,18 +21,22 @@
   "exclude": [
     "**/*.d.ts",
     "**/*.stories.ts",
-    "assets/**/*.*",
+    "assets/**/*.*"
     // "static/**/*.*",
   ],
 
   "compilerOptions": {
     "strict": true,
 
+    // TypeScript 7 requires the common source directory to be set explicitly
+    // when emitting. This makes "lib/freemarker.ts" emit to "dist/freemarker.d.ts".
+    "rootDir": "./lib",
+
     // A series of entries which re-map imports to lookup locations relative
     // to the baseUrl if set, or to the tsconfig file itself otherwise.
     "paths": {
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
-      "/lib/*": ["../../../src/main/resources/lib/*", "../../../node_modules/@item-enonic-types/lib-*"],
+      "/lib/*": ["../../../src/main/resources/lib/*", "../../../node_modules/@item-enonic-types/lib-*"]
     },
     "lib": ["ES5"],
     "skipLibCheck": true,
@@ -54,6 +56,6 @@
       // https://developer.enonic.com/docs/xp/stable/framework/java-bridge
       // __.newBean, __.toNativeObject, __.nullOrValue
       "@enonic-types/global"
-    ],
-  },
+    ]
+  }
 }
