@@ -15,11 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
-
-import static java.util.stream.Collectors.toList;
 
 /**
  * A processor for rendering FreeMarker templates.

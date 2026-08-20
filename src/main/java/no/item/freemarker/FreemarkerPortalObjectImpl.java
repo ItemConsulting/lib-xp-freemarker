@@ -103,7 +103,7 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
    */
   @Override
   public String localize(String key, String locale, List<String> values, List<String> bundles, String application) {
-    Multimap<String, String> args = HashMultimap.create(3, 1);
+    Multimap<String, String> args = HashMultimap.create(5, 1);
     args.put("_key", key);
     args.put("_locale", locale);
     args.putAll("_values", values);
