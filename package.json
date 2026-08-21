@@ -16,6 +16,9 @@
     "type": "git",
     "url": "git+https://github.com/ItemConsulting/lib-xp-freemarker.git"
   },
+  "engines": {
+    "node": ">=24.18.0"
+  },
   "devDependencies": {
     "@biomejs/biome": "^2.5.9",
     "@changesets/cli": "^3.0.1",
@@ -39,7 +42,8 @@
     "build": "node tsup/anyServerFiles.js && npx tsup -d build/resources/main",
     "check": "concurrently -c auto -g --timings npm:check:types npm:lint",
     "check:types": "node tsup/anyServerFiles.js && npx tsc --noEmit -p src/main/resources/tsconfig.json",
-    "lint": "biome check --write",
+    "lint": "biome ci",
+    "lint:fix": "biome check --write",
     "release": "npm run build",
     "versioning": "npx changeset version && npm i --package-lock-only && NEW_VERSION=$(node -p \"require('./package.json').version\") && sed -i \"s/version.*/version = ${NEW_VERSION}/\" gradle.properties",
     "prepublishOnly": "tsc --project src/main/resources/tsconfig.json --declarationDir dist --emitDeclarationOnly true --declaration true",

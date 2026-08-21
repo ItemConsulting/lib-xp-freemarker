@@ -36,7 +36,8 @@ repositories {
 
 node {
   download = true
-  version = "24.18.0"
+  // Single source of truth for the Node version, shared with .github/workflows and nvm
+  version = file(".nvmrc").text.trim()
 }
 
 processResources {
