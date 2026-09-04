@@ -8,7 +8,7 @@
   // Specifies an array of filenames or patterns to include in the program.
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
-  "include": ["./**/*.ts"],
+  "include": ["**/*.ts"],
 
   // Specifies an array of filenames or patterns that should be skipped when
   // resolving include.
@@ -20,25 +20,59 @@
   // codebase - it simply changes what the include setting finds.
   "exclude": [
     "**/*.d.ts",
-    "**/*.stories.ts",
     "assets/**/*.*"
     // "static/**/*.*",
   ],
 
   "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ES5"],
+
+    // Enable all strict type-checking options.
     "strict": true,
 
-    // TypeScript 7 requires the common source directory to be set explicitly
-    // when emitting. This makes "lib/freemarker.ts" emit to "dist/freemarker.d.ts".
+    // The longest common path of all non-declaration input files. Must be set
+    // explicitly, otherwise "prepublishOnly" emits to dist/lib/freemarker.d.ts
+    // while package.json points "types" at dist/freemarker.d.ts (TS5011).
     "rootDir": "./lib",
 
     // A series of entries which re-map imports to lookup locations relative
     // to the baseUrl if set, or to the tsconfig file itself otherwise.
     "paths": {
+      // Explicit per-library entries (rather than only the "/lib/xp/*"
+      // wildcard) let the IDE's auto-import suggest the runtime-correct
+      // "/lib/xp/<name>" specifiers. See also autoImportSpecifierExcludeRegexes
+      // in .vscode/settings.json. Add an entry when installing a new
+      // @enonic-types/lib-* package.
+      "/lib/xp/admin": ["../../../node_modules/@enonic-types/lib-admin/admin"],
+      "/lib/xp/app": ["../../../node_modules/@enonic-types/lib-app/app"],
+      "/lib/xp/auditlog": ["../../../node_modules/@enonic-types/lib-auditlog/auditlog"],
+      "/lib/xp/auth": ["../../../node_modules/@enonic-types/lib-auth/auth"],
+      "/lib/xp/cluster": ["../../../node_modules/@enonic-types/lib-cluster/cluster"],
+      "/lib/xp/common": ["../../../node_modules/@enonic-types/lib-common/common"],
+      "/lib/xp/content": ["../../../node_modules/@enonic-types/lib-content/content"],
+      "/lib/xp/context": ["../../../node_modules/@enonic-types/lib-context/context"],
+      "/lib/xp/event": ["../../../node_modules/@enonic-types/lib-event/event"],
+      "/lib/xp/export": ["../../../node_modules/@enonic-types/lib-export/export"],
+      "/lib/xp/grid": ["../../../node_modules/@enonic-types/lib-grid/grid"],
+      "/lib/xp/i18n": ["../../../node_modules/@enonic-types/lib-i18n/i18n"],
+      "/lib/xp/io": ["../../../node_modules/@enonic-types/lib-io/io"],
+      "/lib/xp/mail": ["../../../node_modules/@enonic-types/lib-mail/mail"],
+      "/lib/xp/node": ["../../../node_modules/@enonic-types/lib-node/node"],
+      "/lib/xp/portal": ["../../../node_modules/@enonic-types/lib-portal/portal"],
+      "/lib/xp/project": ["../../../node_modules/@enonic-types/lib-project/project"],
+      "/lib/xp/repo": ["../../../node_modules/@enonic-types/lib-repo/repo"],
+      "/lib/xp/scheduler": ["../../../node_modules/@enonic-types/lib-scheduler/scheduler"],
+      "/lib/xp/schema": ["../../../node_modules/@enonic-types/lib-schema/schema"],
+      "/lib/xp/sse": ["../../../node_modules/@enonic-types/lib-sse/sse"],
+      "/lib/xp/task": ["../../../node_modules/@enonic-types/lib-task/task"],
+      "/lib/xp/value": ["../../../node_modules/@enonic-types/lib-value/value"],
+      "/lib/xp/vhost": ["../../../node_modules/@enonic-types/lib-vhost/vhost"],
+      "/lib/xp/websocket": ["../../../node_modules/@enonic-types/lib-websocket/websocket"],
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
-      "/lib/*": ["../../../src/main/resources/lib/*", "../../../node_modules/@item-enonic-types/lib-*"]
+      "/*": ["./*"]
     },
-    "lib": ["ES5"],
+
     "skipLibCheck": true,
 
     // By default all visible ”@types” packages are included in your compilation.

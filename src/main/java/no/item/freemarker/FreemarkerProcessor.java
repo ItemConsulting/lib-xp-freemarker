@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -103,8 +104,12 @@ public class FreemarkerProcessor {
       }
       environment.process();
     } catch (final TemplateException e) {
-      // Throw exception on the live site, but allow rendering of HTML error message (done in writer) in Content Studio
-      if (portalRequest.getMode().equals(RenderMode.LIVE)) {
+      // Throw exception on the live site, but allow rendering of HTML error message (done in writer) in Content Studio.
+      // Only swallow when we know we are in Content Studio: outside a portal request (a task, for instance) there is
+      // nothing to render the error message in, so the caller has to hear about it.
+      RenderMode mode = portalRequest != null ? portalRequest.getMode() : null;
+
+      if (mode == null || mode == RenderMode.LIVE) {
         throw e;
       }
     }
@@ -137,8 +142,8 @@ public class FreemarkerProcessor {
 
   /**
    * If the current content has a language set, return it as a {@link Locale}. If not, try to get the language from the site, otherwise
-   * try to get the language from the "Accept-Language" header. If all else fails see what languages are used by the
-   * application and return the first one.
+   * pick the best match among the locales the client asked for (parsed from the "Accept-Language" header by XP) and the
+   * locales the application actually has phrases for.
    * @return The locale from the portal request or null if none can be determined
    */
   private Locale getLocaleFromPortalRequest() {
@@ -151,15 +156,14 @@ public class FreemarkerProcessor {
         return portalRequest.getContent().getLanguage();
       } else if (portalRequest.getSite() != null) {
         return portalRequest.getSite().getLanguage();
-      } else if (portalRequest.getRawRequest().getHeader("Accept-Language") != null) {
-        String acceptLanguage = portalRequest.getRawRequest().getHeader("Accept-Language");
-
-        return Locale.filter(
-          Locale.LanguageRange.parse(acceptLanguage),
-          this.localeService.getLocales(portalRequest.getApplicationKey(), "i18n/phrases")
-        ).get(0);
       }
-    } catch (Exception ex) {
+
+      // Since XP 8 the "Accept-Language" header is parsed by the web layer and exposed as WebRequest.getLocales()
+      List<Locale> preferredLocales = portalRequest.getLocales();
+      if (preferredLocales != null && !preferredLocales.isEmpty()) {
+        return this.localeService.getSupportedLocale(preferredLocales, portalRequest.getApplicationKey(), "i18n/phrases");
+      }
+    } catch (Exception _) {
       // Do nothing, just return null
     }
 

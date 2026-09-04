@@ -1,30 +1,47 @@
 plugins {
-  id "java"
-  id 'java-library'
+  id "java-library"
   id "maven-publish"
-  id "com.enonic.xp.base" version "3.6.2"
+  id "com.enonic.xp.base"
   id "com.github.node-gradle.node" version "7.1.0"
 }
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
-
+// XP 8 requires Java 25 (core-api declares osgi.ee=JavaSE;version=25), so pin the toolchain used to compile.
+// Note this does not free the build from the JDK that runs Gradle itself: the com.enonic.xp.settings plugin in
+// settings.gradle needs a Gradle JVM of 21 or newer, and fails during settings evaluation on anything older.
 java {
+  toolchain {
+    languageVersion = JavaLanguageVersion.of(25)
+  }
   withJavadocJar()
   withSourcesJar()
 }
 
 dependencies {
-  implementation "com.enonic.xp:core-api:${xpVersion}"
-  implementation "com.enonic.xp:portal-api:${xpVersion}"
-  implementation "org.freemarker:freemarker:2.3.34"
+  // ─────────────────────────────────────────────────────────────────────────
+  // XP APIs the Java sources compile against. Provided by the XP runtime, so
+  // they must not be bundled into the app.
+  // ─────────────────────────────────────────────────────────────────────────
+  // portal-api brings web-api and script-api along transitively.
+  compileOnly xplibs.api.core
+  compileOnly xplibs.api.portal
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // Third party libraries bundled into the app
+  // ─────────────────────────────────────────────────────────────────────────
+  implementation "org.freemarker:freemarker:2.3.35"
   implementation "no.api.freemarker:freemarker-java8:3.0.3"
 
-  testImplementation "org.junit.jupiter:junit-jupiter-api:5.13.4"
-  testImplementation "org.mockito:mockito-core:5.18.0"
-  testImplementation "org.mockito:mockito-junit-jupiter:5.18.0"
-  testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-  testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine:5.13.4"
+  // compileOnly does not reach the test classpath; this puts the XP APIs back on it.
+  testImplementation xplibs.testing
+
+  // Versions come from the BOMs so they cannot silently disagree with what xplibs.testing drags in
+  testImplementation platform(libs.junit.bom)
+  testImplementation platform(libs.mockito.bom)
+  testImplementation libs.junit.jupiter
+  testImplementation libs.mockito.core
+  testImplementation libs.mockito.jupiter
+  testRuntimeOnly libs.junit.launcher
+  testRuntimeOnly libs.junit.engine
 }
 
 repositories {
@@ -47,14 +64,6 @@ processResources {
   exclude "**/*.tsx"
 }
 
-tasks.register("dev", Exec) {
-  if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
-    commandLine "cmd", "/c", "gradlew.bat", "deploy", "-t"
-  } else {
-    commandLine "./gradlew", "deploy", "-t"
-  }
-}
-
 tasks.register("npmBuild", NpmTask) {
   args = [
     "run",
@@ -63,16 +72,38 @@ tasks.register("npmBuild", NpmTask) {
   ]
   dependsOn npmInstall
   environment = [
-    "FORCE_COLOR"          : "true",
+    "FORCE_COLOR": "true",
     "LOG_LEVEL_FROM_GRADLE": gradle.startParameter.logLevel.toString(),
-    "NODE_ENV"             : project.hasProperty("dev") || project.hasProperty("development") ? "development" : "production"
+    "NODE_ENV": isDevBuild() ? "development" : "production"
   ]
   inputs.dir "src/main/resources"
   outputs.dir "build/resources/main"
   outputs.upToDateWhen { false }
 }
 
+// Accepts -Penv=dev as well as the older -Pdev / -Pdevelopment spellings.
+// The legacy flags have to be read straight off the command line: Gradle exposes tasks as project properties, so
+// project.hasProperty("dev") is always true once the "dev" task below exists, which made every build a dev build.
+boolean isDevBuild() {
+  Map<String, String> cliProperties = gradle.startParameter.projectProperties
+
+  return project.findProperty("env") == "dev" ||
+    cliProperties.containsKey("dev") ||
+    cliProperties.containsKey("development")
+}
+
+tasks.register("dev", Exec) {
+  if (org.gradle.internal.os.OperatingSystem.current().isWindows()) {
+    commandLine "cmd", "/c", "gradlew.bat", "deploy", "-t"
+  } else {
+    commandLine "./gradlew", "deploy", "-t"
+  }
+}
+
 jar.dependsOn npmBuild
+
+// npmBuild writes into build/resources/main, which is on the test compile classpath
+compileTestJava.dependsOn npmBuild
 
 tasks.register("npmCheck", NpmTask) {
   dependsOn npmInstall
@@ -86,8 +117,6 @@ tasks.register("npmCheck", NpmTask) {
 }
 
 check.dependsOn npmCheck
-
-compileTestJava.dependsOn npmBuild
 
 tasks.test {
   useJUnitPlatform()
@@ -122,7 +151,7 @@ publishing {
 
 javadoc {
   options.links(
-    'https://docs.oracle.com/en/java/javase/11/docs/api/',
+    'https://docs.oracle.com/en/java/javase/25/docs/api/',
     'https://freemarker.apache.org/docs/api/'
   )
 
