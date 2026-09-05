@@ -19,7 +19,12 @@ import java.util.Map;
 public class PortalComponentDirective implements TemplateDirectiveModel {
   private static final String PARAM_PATH = "path";
 
-  @SuppressWarnings("rawtypes")
+  /**
+   * Creates a directive instance. The directive is stateless and can be shared between templates.
+   */
+  public PortalComponentDirective() {
+  }
+
   public void execute(Environment env, Map params, TemplateModel[] loopVars, TemplateDirectiveBody body) throws TemplateException, IOException {
     final String componentPath = asString(params.get(PARAM_PATH));
 

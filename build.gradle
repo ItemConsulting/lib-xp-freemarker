@@ -48,7 +48,7 @@ repositories {
   mavenLocal()
   mavenCentral()
   xp.enonicRepo()
-  maven { url "https://repo.itemtest.no/releases" }
+  maven { url = "https://repo.itemtest.no/releases" }
 }
 
 node {
@@ -142,9 +142,11 @@ publishing {
   publications {
     maven(MavenPublication) {
       from components.java
-      groupId group
-      artifactId projectName
-      version version
+      // project.* qualified: inside a MavenPublication closure a bare "version" would
+      // resolve to the publication's own property, not the project's.
+      groupId = project.group
+      artifactId = projectName
+      version = project.version
     }
   }
 }

@@ -1,7 +1,7 @@
-import { existsSync } from "node:fs";
+import { existsSync, globSync } from "node:fs";
+import { sep } from "node:path";
 
 import { transform } from "@swc/core";
-import { globSync } from "glob";
 import { defineConfig } from "tsdown";
 
 const SRC = "src/main/resources";
@@ -17,12 +17,13 @@ const logLevel: "silent" | "info" = ["QUIET", "WARN"].includes(process.env.LOG_L
 // Enonic XP loads each controller/service/task by its resource path, so every
 // source file must become its own output file with the directory tree intact.
 // Turn a glob into a tsdown `entry` map ({ "relative/name": "src/path/file.ts" }).
-function entries(dir: string, exts: string, ignore: string[] = []): Record<string, string> {
+function entries(dir: string, exts: string, exclude: string[] = []): Record<string, string> {
   return Object.fromEntries(
-    globSync(`${dir}/**/*.${exts}`, { posix: true, ignore }).map((file) => [
-      file.slice(dir.length + 1).replace(/\.[^.]+$/, ""),
-      file,
-    ]),
+    globSync(`${dir}/**/*.${exts}`, { exclude }).map((match) => {
+      // globSync returns platform separators; entry keys and paths must be posix.
+      const file = match.replaceAll(sep, "/");
+      return [file.slice(dir.length + 1).replace(/\.[^.]+$/, ""), file];
+    }),
   );
 }
 

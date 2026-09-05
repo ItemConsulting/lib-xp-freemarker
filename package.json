@@ -26,7 +26,6 @@
     "@swc/core": "^1.16.1",
     "@types/node": "^26.0.0",
     "concurrently": "^10.0.5",
-    "glob": "^13.0.6",
     "tsdown": "^0.23.0",
     "typescript": "^7.0.2"
   },
