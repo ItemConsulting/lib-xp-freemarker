@@ -120,6 +120,16 @@ check.dependsOn npmCheck
 
 tasks.test {
   useJUnitPlatform()
+
+  // Gradle otherwise reports a failure as a bare "AssertionFailedError at Foo.java:9" and points at
+  // an HTML report, which is a dead file:// link on a CI runner. Print the assertion message and
+  // stack trace instead, so a failed workflow run explains itself in the log.
+  testLogging {
+    events "failed"
+    exceptionFormat = "full"
+    showStackTraces = true
+    showCauses = true
+  }
 }
 
 tasks.withType(Copy).configureEach {
