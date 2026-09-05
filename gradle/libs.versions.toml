@@ -1,0 +1,33 @@
+# Libraries from the Enonic Market ( https://market.enonic.com/libraries )
+# Enonic XP's own libraries are provided by the `xplibs` catalog (com.enonic.xp.settings plugin).
+[versions]
+# Test libraries. These match what com.enonic.xp:testing brings in, so the two agree
+# rather than silently overriding each other.
+junit = "6.1.2"
+mockito = "5.23.0"
+
+asset = "2.0.1"
+cache = "3.0.0"
+http-client = "4.0.0"
+mustache = "3.0.0"
+router = "4.0.0"
+static = "3.0.0"
+thymeleaf = "3.0.0"
+
+[libraries]
+# BOMs, so the artifacts below can be declared without versions
+junit-bom = { module = "org.junit:junit-bom", version.ref = "junit" }
+mockito-bom = { module = "org.mockito:mockito-bom", version.ref = "mockito" }
+junit-jupiter = { module = "org.junit.jupiter:junit-jupiter" }
+junit-engine = { module = "org.junit.jupiter:junit-jupiter-engine" }
+junit-launcher = { module = "org.junit.platform:junit-platform-launcher" }
+mockito-core = { module = "org.mockito:mockito-core" }
+mockito-jupiter = { module = "org.mockito:mockito-junit-jupiter" }
+
+asset = { module = "com.enonic.lib:lib-asset", version.ref = "asset" }
+cache = { module = "com.enonic.lib:lib-cache", version.ref = "cache" }
+http-client = { module = "com.enonic.lib:lib-http-client", version.ref = "http-client" }
+mustache = { module = "com.enonic.lib:lib-mustache", version.ref = "mustache" }
+router = { module = "com.enonic.lib:lib-router", version.ref = "router" }
+static = { module = "com.enonic.lib:lib-static", version.ref = "static" }
+thymeleaf = { module = "com.enonic.lib:lib-thymeleaf", version.ref = "thymeleaf" }

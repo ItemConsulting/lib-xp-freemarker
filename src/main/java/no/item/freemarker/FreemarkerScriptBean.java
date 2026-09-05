@@ -1,13 +1,15 @@
 package no.item.freemarker;
 
+import com.enonic.xp.app.ApplicationKey;
 import com.enonic.xp.home.HomeDir;
 import com.enonic.xp.i18n.LocaleService;
 import com.enonic.xp.portal.PortalRequest;
 import com.enonic.xp.portal.url.PortalUrlService;
-import com.enonic.xp.portal.view.ViewFunctionService;
+import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
+import com.enonic.xp.server.RunMode;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
@@ -16,11 +18,10 @@ import no.api.freemarker.java8.Java8ObjectWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.function.Supplier;
@@ -48,13 +49,17 @@ public class FreemarkerScriptBean implements ScriptBean {
    * "freemarker.properties" file if present in the XP home directory.
    */
   public FreemarkerScriptBean() {
-    configuration = new Configuration(Configuration.VERSION_2_3_34);
+    configuration = new Configuration(Configuration.VERSION_2_3_35);
     configuration.setDefaultEncoding("UTF-8");
     configuration.setLogTemplateExceptions(false);
     configuration.setLocalizedLookup(false); // Don't check for e.g. template_en.ftl
     configuration.setTagSyntax(Configuration.AUTO_DETECT_TAG_SYNTAX);
     configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
-    configuration.setObjectWrapper(new Java8ObjectWrapper(Configuration.VERSION_2_3_34));
+    configuration.setObjectWrapper(new Java8ObjectWrapper(Configuration.VERSION_2_3_35));
+
+    if (RunMode.get() == RunMode.DEV) {
+      configuration.setTemplateUpdateDelayMilliseconds(0); // Pick up template edits immediately
+    }
 
     getPropertiesFromFile().ifPresent((properties) -> {
       try {
@@ -78,15 +83,15 @@ public class FreemarkerScriptBean implements ScriptBean {
   public void initialize(BeanContext context) {
     this.requestSupplier = context.getBinding(PortalRequest.class);
     this.localeSupplier = context.getService(LocaleService.class);
-    Supplier<ViewFunctionService> viewFunctionServiceSupplier = context.getService(ViewFunctionService.class);
     Supplier<ResourceService> resourceServiceSupplier = context.getService(ResourceService.class);
     Supplier<PortalUrlService> portalUrlServiceSupplier = context.getService(PortalUrlService.class);
+    ApplicationKey applicationKey = context.getApplicationKey();
 
     try {
-      FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(portalUrlServiceSupplier, viewFunctionServiceSupplier, this.requestSupplier);
+      FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(portalUrlServiceSupplier, this.localeSupplier, this.requestSupplier, applicationKey);
 
       configuration.setSharedVariable("portal", portal);
-      configuration.setTemplateLoader(new ResourceTemplateLoader(resourceServiceSupplier));
+      configuration.setTemplateLoader(new ResourceTemplateLoader(resourceServiceSupplier, context.getResourceKey()));
     } catch (TemplateModelException e) {
       throw new RuntimeException(e);
     }
@@ -122,20 +127,23 @@ public class FreemarkerScriptBean implements ScriptBean {
    * @return An Optional containing the loaded properties, or empty if the file does not exist.
    */
   private Optional<Properties> getPropertiesFromFile() {
-    final File xpHome = HomeDir.get().toFile();
-    Path path = Paths.get( xpHome.getAbsolutePath(), "config", "freemarker.properties" );
-    File propertiesFile = path.toFile();
+    Path path = HomeDir.get().toPath().resolve(Path.of("config", "freemarker.properties"));
 
-    if(propertiesFile.exists()) {
-      try {
-        Properties properties = new Properties();
-        properties.load(new FileReader(path.toFile()));
-        return Optional.of(properties);
-      } catch (IOException e) {
-        logger.error("Error reading freemarker.properties file: {}", e.getMessage());
-      }
+    if (!Files.isRegularFile(path)) {
+      return Optional.empty();
     }
 
-    return Optional.empty();
+    // Files.newBufferedReader reads UTF-8 regardless of the platform default, and try-with-resources
+    // closes the reader that the previous implementation leaked on every successful load.
+    try (Reader reader = Files.newBufferedReader(path)) {
+      Properties properties = new Properties();
+      properties.load(reader);
+
+      return Optional.of(properties);
+    } catch (IOException e) {
+      logger.error("Error reading freemarker.properties file: {}", e.getMessage());
+
+      return Optional.empty();
+    }
   }
 }

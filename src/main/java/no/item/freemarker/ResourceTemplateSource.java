@@ -19,7 +19,6 @@ public class ResourceTemplateSource implements Closeable {
    * @param resource the XP {@link Resource} for the template.
    */
   public ResourceTemplateSource(Resource resource) {
-    super();
     this.resource = resource;
     this.reader = this.resource.openReader();
   }

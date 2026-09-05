@@ -14,5 +14,14 @@ jobs:
           node-version-file: ".nvmrc"
           cache: "npm"
 
+      # The com.enonic.xp.settings plugin needs a Gradle JVM of 21+, and XP 8 compiles against Java 25
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 25
+
       - run: npm install
       - run: npm run lint && npm run build
+
+      # Runs check (types + lint) and the Java tests, and builds the jar
+      - run: ./gradlew build --no-daemon

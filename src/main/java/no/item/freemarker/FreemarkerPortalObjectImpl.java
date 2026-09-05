@@ -1,47 +1,52 @@
 package no.item.freemarker;
 
+import com.enonic.xp.app.ApplicationKey;
+import com.enonic.xp.i18n.LocaleService;
+import com.enonic.xp.i18n.MessageBundle;
 import com.enonic.xp.portal.PortalRequest;
-import com.enonic.xp.portal.url.AssetUrlParams;
-import com.enonic.xp.portal.url.GenerateUrlParams;
 import com.enonic.xp.portal.url.PortalUrlService;
 import com.enonic.xp.portal.url.ProcessHtmlParams;
-import com.enonic.xp.portal.view.ViewFunctionParams;
-import com.enonic.xp.portal.view.ViewFunctionService;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
+import com.enonic.xp.site.Site;
 import freemarker.core.Environment;
 import freemarker.template.TemplateDirectiveModel;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 import java.util.function.Supplier;
 
 /**
  * The default portal object that can be used in FreeMarker templates.
  */
 public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
+  private static final String NOT_TRANSLATED = "NOT_TRANSLATED";
+  private static final String[] NO_BUNDLES = new String[0];
+
   private final TemplateDirectiveModel component = new PortalComponentDirective();
   private final Supplier<PortalUrlService> portalUrlServiceSupplier;
-  private final Supplier<ViewFunctionService> viewFunctionServiceSupplier;
+  private final Supplier<LocaleService> localeServiceSupplier;
   private final Supplier<PortalRequest> requestSupplier;
+  private final ApplicationKey applicationKey;
 
   /**
    * This object provides portal-related functionality for FreeMarker templates,
    * including URL generation, localization, and HTML processing capabilities.
    *
    * @param portalUrlServiceSupplier Service for URL generation.
-   * @param viewFunctionService      Service for executing view functions.
+   * @param localeServiceSupplier    Service for resolving message bundles.
    * @param requestSupplier          Supplier for the current portal request.
+   * @param applicationKey           The application the templates are rendered for. Used to look up message bundles
+   *                                 unless an explicit application is passed to localize.
    */
   public FreemarkerPortalObjectImpl(
     Supplier<PortalUrlService> portalUrlServiceSupplier,
-    Supplier<ViewFunctionService> viewFunctionService,
-    Supplier<PortalRequest> requestSupplier
+    Supplier<LocaleService> localeServiceSupplier,
+    Supplier<PortalRequest> requestSupplier,
+    ApplicationKey applicationKey
   ) {
     this.portalUrlServiceSupplier = portalUrlServiceSupplier;
-    this.viewFunctionServiceSupplier = viewFunctionService;
+    this.localeServiceSupplier = localeServiceSupplier;
     this.requestSupplier = requestSupplier;
+    this.applicationKey = applicationKey;
   }
 
   /**
@@ -62,7 +67,7 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
    */
   @Override
   public String localize(String key) {
-    return localize(key, Lists.newArrayList());
+    return localize(key, List.of());
   }
 
   /**
@@ -75,7 +80,9 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
   @Override
   public String localize(String key, List<String> values) {
     Environment environment = Environment.getCurrentEnvironment();
-    return localize(key, environment.getLocale().toLanguageTag(), values, Lists.newArrayList(), null);
+    String locale = environment != null ? environment.getLocale().toLanguageTag() : null;
+
+    return localize(key, locale, values, List.of(), null);
   }
 
   /**
@@ -88,7 +95,7 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
    */
   @Override
   public String localize(String key, String locale, List<String> values) {
-    return localize(key, locale, values, Lists.newArrayList(), null);
+    return localize(key, locale, values, List.of(), null);
   }
 
   /**
@@ -103,19 +110,19 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
    */
   @Override
   public String localize(String key, String locale, List<String> values, List<String> bundles, String application) {
-    Multimap<String, String> args = HashMultimap.create(5, 1);
-    args.put("_key", key);
-    args.put("_locale", locale);
-    args.putAll("_values", values);
-    args.putAll("_bundles", bundles);
-    args.put("_application", application);
+    MessageBundle bundle = localeServiceSupplier.get().getBundle(
+      resolveApplicationKey(application),
+      resolveLocale(locale),
+      bundles != null ? bundles.toArray(NO_BUNDLES) : NO_BUNDLES
+    );
 
-    ViewFunctionParams params = new ViewFunctionParams()
-      .name("i18n.localize")
-      .args(args)
-      .portalRequest(requestSupplier.get());
+    if (bundle == null) {
+      return NOT_TRANSLATED;
+    }
 
-    return (String) viewFunctionServiceSupplier.get().execute(params);
+    String localized = bundle.localize(key, values != null ? values.toArray() : new Object[0]);
+
+    return localized != null ? localized : NOT_TRANSLATED;
   }
 
   /**
@@ -142,14 +149,49 @@ public class FreemarkerPortalObjectImpl implements FreemarkerPortalObject {
    */
   @Override
   public String processHtml(String value, String type, List<Integer> imageWidths, String imageSizes) {
+    // Since XP 8 the portal request is resolved from the current context by the service itself.
     ProcessHtmlParams params = new ProcessHtmlParams()
-      .value(value)
       .type(type)
+      .value(value)
       .imageWidths(imageWidths)
-      .imageSizes(imageSizes)
-      .portalRequest(requestSupplier.get());
+      .imageSizes(imageSizes);
 
     return portalUrlServiceSupplier.get().processHtml(params);
   }
-}
 
+  /**
+   * Resolve the application to look up message bundles in. An explicitly passed application wins, otherwise the
+   * application the bean was created for is used. This matches XP's own /lib/xp/i18n, which resolves the default
+   * application from the calling script and never from the portal request: the app that renders a template is the
+   * app that ships its phrases, even when the request belongs to another application.
+   *
+   * @param application Application key as a string, or null.
+   * @return The resolved application key.
+   */
+  private ApplicationKey resolveApplicationKey(String application) {
+    return application != null && !application.isBlank()
+      ? ApplicationKey.from(application)
+      : applicationKey;
+  }
+
+  /**
+   * Resolve the locale to localize in. Falls back to the language of the site in the current portal request.
+   *
+   * @param locale A string-representation of a locale, or null.
+   * @return The resolved locale, or null if none can be determined.
+   */
+  private Locale resolveLocale(String locale) {
+    if (locale != null && !locale.isBlank()) {
+      return Locale.forLanguageTag(locale);
+    }
+
+    PortalRequest request = requestSupplier.get();
+    if (request == null) {
+      return null;
+    }
+
+    Site site = request.getSite();
+
+    return site != null ? site.getLanguage() : null;
+  }
+}

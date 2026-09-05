@@ -27,7 +27,7 @@ const service = __.newBean<FreemarkerService>("no.item.freemarker.FreemarkerScri
  * @param name The name of the template as it will appear in error logs.
  * @returns The rendered template as a string
  */
-export function render<Model>(view: string, model: Model, name: string): string;
+export function render<Model extends object>(view: string, model: Model, name: string): string;
 
 /**
  * Renders a FreeMarker template with the provided model and configuration.
@@ -36,7 +36,7 @@ export function render<Model>(view: string, model: Model, name: string): string;
  * @param model The data model to be used in the template
  * @returns The rendered template as a string
  */
-export function render<Model>(view: ResourceKey | string, model: Model): string;
+export function render<Model extends object>(view: ResourceKey | string, model: Model): string;
 
 /**
  * Renders a FreeMarker template with the provided model and configuration.
@@ -46,7 +46,7 @@ export function render<Model>(view: ResourceKey | string, model: Model): string;
  * @param name The name of the template as it will appear in error logs.
  * @returns The rendered template as a string
  */
-export function render<Model>(view: string | ResourceKey, model: Model, name?: string): string {
+export function render<Model extends object>(view: string | ResourceKey, model: Model, name?: string): string {
   const processor = service.newProcessor();
 
   if (name && typeof view === "string") {

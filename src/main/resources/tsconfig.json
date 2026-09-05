@@ -8,7 +8,7 @@
   // Specifies an array of filenames or patterns to include in the program.
   // These filenames are resolved relative to the directory containing the
   // tsconfig.json file.
-  "include": ["./**/*.ts"],
+  "include": ["**/*.ts"],
 
   // Specifies an array of filenames or patterns that should be skipped when
   // resolving include.
@@ -18,27 +18,27 @@
   // a /// <reference directive, or being specified in the files list.
   // It is not a mechanism that prevents a file from being included in the
   // codebase - it simply changes what the include setting finds.
-  "exclude": [
-    "**/*.d.ts",
-    "**/*.stories.ts",
-    "assets/**/*.*"
-    // "static/**/*.*",
-  ],
+  "exclude": ["**/*.d.ts"],
 
   "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ES5"],
+
+    // Enable all strict type-checking options.
     "strict": true,
 
-    // TypeScript 7 requires the common source directory to be set explicitly
-    // when emitting. This makes "lib/freemarker.ts" emit to "dist/freemarker.d.ts".
+    // The longest common path of all non-declaration input files. Must be set
+    // explicitly, otherwise "prepublishOnly" emits to dist/lib/freemarker.d.ts
+    // while package.json points "types" at dist/freemarker.d.ts (TS5011).
     "rootDir": "./lib",
 
     // A series of entries which re-map imports to lookup locations relative
     // to the baseUrl if set, or to the tsconfig file itself otherwise.
     "paths": {
       "/lib/xp/*": ["../../../node_modules/@enonic-types/lib-*"],
-      "/lib/*": ["../../../src/main/resources/lib/*", "../../../node_modules/@item-enonic-types/lib-*"]
+      "/*": ["./*"]
     },
-    "lib": ["ES5"],
+
     "skipLibCheck": true,
 
     // By default all visible ”@types” packages are included in your compilation.
