@@ -3,11 +3,20 @@
 This library lets you use [Apache FreeMarker](https://freemarker.apache.org/)-templates with Enonic XP.
 
 ![Build badge](https://github.com/ItemConsulting/lib-xp-freemarker/actions/workflows/main.yml/badge.svg)
-[![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/snapshots/no/item/lib-xp-freemarker)
-[![](https://repo.itemtest.no/api/badge/latest/snapshots/no/item/lib-xp-freemarker?name=javadoc)](https://repo.itemtest.no/javadoc/snapshots/no/item/lib-xp-freemarker/latest)
+[![](https://repo.itemtest.no/api/badge/latest/releases/no/item/lib-xp-freemarker)](https://repo.itemtest.no/#/releases/no/item/lib-xp-freemarker)
+[![](https://repo.itemtest.no/api/badge/latest/releases/no/item/lib-xp-freemarker?name=javadoc)](https://repo.itemtest.no/javadoc/releases/no/item/lib-xp-freemarker/latest)
 [![](https://img.shields.io/npm/types/%40item-enonic-types%2Flib-freemarker)](https://www.npmjs.com/package/@item-enonic-types/lib-freemarker)
 
 <img src="./docs/icon.svg?sanitize=true" width="150">
+
+## Versions
+
+| Enonic XP | This library |
+| --------- | ------------ |
+| 8.x       | 4.x          |
+| 7.x       | 3.x          |
+
+The jar and the npm types package are released together and always share a version number.
 
 ## Installation
 
@@ -22,7 +31,7 @@ repositories {
 }
 
 dependencies {
-  include "no.item:lib-xp-freemarker:3.0.0-SNAPSHOT"
+  include "no.item:lib-xp-freemarker:4.0.0"
 }
 ```
 
