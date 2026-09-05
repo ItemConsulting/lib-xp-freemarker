@@ -18,11 +18,7 @@
   // a /// <reference directive, or being specified in the files list.
   // It is not a mechanism that prevents a file from being included in the
   // codebase - it simply changes what the include setting finds.
-  "exclude": [
-    "**/*.d.ts",
-    "assets/**/*.*"
-    // "static/**/*.*",
-  ],
+  "exclude": ["**/*.d.ts"],
 
   "compilerOptions": {
     "target": "ES2015",

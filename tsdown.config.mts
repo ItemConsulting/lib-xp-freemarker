@@ -1,15 +1,11 @@
 import { existsSync, globSync } from "node:fs";
 import { sep } from "node:path";
-
 import { transform } from "@swc/core";
 import { defineConfig } from "tsdown";
 
 const SRC = "src/main/resources";
-const SRC_ASSETS = `${SRC}/assets`;
 const DST = "build/resources/main";
-const DST_ASSETS = `${DST}/assets`;
 
-const dev = process.env.NODE_ENV === "development";
 const logLevel: "silent" | "info" = ["QUIET", "WARN"].includes(process.env.LOG_LEVEL_FROM_GRADLE || "")
   ? "silent"
   : "info";
@@ -27,8 +23,7 @@ function entries(dir: string, exts: string, exclude: string[] = []): Record<stri
   );
 }
 
-const serverEntry = entries(SRC, "{ts,js}", ["**/*.d.ts", `${SRC_ASSETS}/**`]);
-const assetEntry = entries(SRC_ASSETS, "{tsx,ts,jsx,js}", ["**/*.d.ts"]);
+const serverEntry = entries(SRC, "{ts,js}", ["**/*.d.ts"]);
 
 // XP resolves an absolute import at runtime against the app's own resources
 // first, then against the modules provided by the runtime: XP's own libraries
@@ -37,7 +32,7 @@ const assetEntry = entries(SRC_ASSETS, "{tsx,ts,jsx,js}", ["**/*.d.ts"]);
 // source file of this app, and leave every other one to the runtime — no list
 // of runtime modules to maintain. A mistyped specifier is caught by
 // `check:types` (TS2307), not by the bundler.
-const SRC_EXTS = [".ts", ".tsx", ".js", ".jsx"];
+const SRC_EXTS = [".ts", ".js"];
 const appSourceCache = new Map<string, boolean>();
 function isAppSource(id: string): boolean {
   let hit = appSourceCache.get(id);
@@ -71,9 +66,9 @@ const nashornEs5 = {
   },
 };
 
-// Skip a target that has no source files (e.g. a server-only or client-only app).
-export default defineConfig([
-  ...(Object.keys(serverEntry).length
+// Skip the build when there are no source files to bundle.
+export default defineConfig(
+  Object.keys(serverEntry).length
     ? [
         {
           entry: serverEntry,
@@ -81,7 +76,7 @@ export default defineConfig([
           format: "cjs" as const,
           target: "es2015", // Rolldown/oxc floor; nashornEs5 plugin re-lowers to es5 for Nashorn
           platform: "neutral" as const,
-          clean: false, // outDir also holds Gradle-copied resources + the assets/ subfolder
+          clean: false, // outDir also holds resources copied there by Gradle
           dts: false, // d.ts files are useless at runtime
           minify: false, // minifying server files makes debugging harder
           sourcemap: false,
@@ -99,22 +94,5 @@ export default defineConfig([
           },
         },
       ]
-    : []),
-  ...(Object.keys(assetEntry).length
-    ? [
-        {
-          entry: assetEntry,
-          outDir: DST_ASSETS,
-          format: "esm" as const,
-          target: "es2023",
-          platform: "browser" as const,
-          clean: false,
-          dts: false,
-          minify: !dev,
-          sourcemap: dev,
-          logLevel,
-          tsconfig: `${SRC_ASSETS}/tsconfig.json`,
-        },
-      ]
-    : []),
-]);
+    : [],
+);
