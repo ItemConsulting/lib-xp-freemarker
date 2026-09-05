@@ -3,7 +3,7 @@
   "sideEffects": false,
   "description": "Type definitions for lib-freemarker",
   "author": "Tom Arild Jakobsen <tajakobsen@gmail.com>",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "license": "MIT",
   "types": "dist/freemarker.d.ts",
   "files": [
