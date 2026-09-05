@@ -262,15 +262,46 @@ Deploy locally for testing purposes:
 ./gradlew publishToMavenLocal
 ```
 
-### Deploy to Maven
+## Releasing
+
+Releases are driven by [Changesets](https://github.com/changesets/changesets) and run in GitHub Actions.
+
+1. Describe your change in a changeset and commit it with the change itself:
+
+   ```bash
+   npx changeset
+   ```
+
+2. When that lands on `main`, the *Publish* workflow opens (or updates) a **Version Packages** pull
+   request. It bumps the version in *package.json*, *package-lock.json* and *gradle.properties*, and
+   folds the changesets into *CHANGELOG.md*.
+
+3. Merging that pull request makes the same workflow do the release:
+
+   - publish the type definitions to npm as `@item-enonic-types/lib-freemarker`, with
+     [build provenance](https://docs.npmjs.com/generating-provenance-statements) attached
+     automatically
+   - tag the commit `v[version]` and create the matching GitHub release
+   - publish the jar to <https://repo.itemtest.no/releases>
+
+### Release credentials
+
+npm is published with [trusted publishing](https://docs.npmjs.com/trusted-publishers): no token is
+stored anywhere, the npm CLI trades the workflow's OIDC token for a short-lived one. It is
+configured on npmjs.com under the package's *Settings > Trusted publisher*, pointing at
+organization `ItemConsulting`, repository `lib-xp-freemarker` and workflow `publish.yml`. All three
+are case-sensitive, and renaming the workflow file breaks publishing until it is updated there.
+
+The Maven repository still uses credentials, so the repository needs two secrets:
+`REPOSILITE_USERNAME` and `REPOSILITE_PASSWORD`.
+
+### Releasing by hand
+
+Only needed if the automated release fails. The Maven publish reads its credentials from
+`itemtestRepositoryUsername` / `itemtestRepositoryPassword` in *~/.gradle/gradle.properties*.
 
 ```bash
-./gradlew publish -P com.enonic.xp.app.production=true
-```
-
-## Publish types to npm
-
-```bash
+./gradlew publishAllPublicationsToItemtestRepositoryRepository
 npm publish
 # npm publish --tag beta
 ```
