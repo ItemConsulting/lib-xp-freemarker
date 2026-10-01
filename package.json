@@ -44,7 +44,7 @@
     "lint": "biome ci",
     "lint:fix": "biome check --write",
     "release": "changeset publish",
-    "versioning": "changeset version && npm i --package-lock-only && NEW_VERSION=$(node -p \"require('./package.json').version\") && sed -i -E \"s/^version *=.*/version = ${NEW_VERSION}/\" gradle.properties",
+    "versioning": "changeset version && npm i --package-lock-only && node .changeset/gradle-version.mjs",
     "prepublishOnly": "tsc --project src/main/resources/tsconfig.json --declarationDir dist --emitDeclarationOnly true --declaration true",
     "postpublish": "rm -r ./dist"
   }

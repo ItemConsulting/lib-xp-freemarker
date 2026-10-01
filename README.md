@@ -283,8 +283,9 @@ Releases are driven by [Changesets](https://github.com/changesets/changesets) an
    ```
 
 2. When that lands on `main`, the *Publish* workflow opens (or updates) a **Version Packages** pull
-   request. It bumps the version in *package.json*, *package-lock.json* and *gradle.properties*, and
-   folds the changesets into *CHANGELOG.md*.
+   request. It bumps the version in *package.json*, *package-lock.json* and *gradle.properties* (through
+   *.changeset/gradle-version.mjs*, which versions the jar of a prerelease such as `5.0.0-beta.0` as the snapshot
+   `5.0.0-SNAPSHOT`), and folds the changesets into *CHANGELOG.md*.
 
 3. Merging that pull request makes the same workflow do the release:
 
