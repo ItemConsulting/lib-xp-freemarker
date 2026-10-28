@@ -169,6 +169,63 @@ export function get(): Response {
 };
 ```
 
+### Render XML
+
+If you pass an XML document instead of a model object, FreeMarker can process it much like XSLT does. The XML can be:
+
+ - a `string` containing the XML
+ - a `ResourceKey` pointing to an XML file in your application
+ - a `ByteSource`, such as an attachment from `getAttachmentStream()` in `/lib/xp/content`
+
+```typescript
+import { render } from "/lib/freemarker";
+import { getAttachmentStream, getContent } from "/lib/xp/content";
+import type { Response } from "@enonic-types/core";
+
+const view = resolve("article.ftl");
+
+export function get(): Response {
+  const content = getContent()!;
+  const xml = getAttachmentStream({ key: content._id, name: "article.xml" })!;
+
+  return {
+    body: render(view, xml),
+  };
+}
+```
+
+> [!NOTE]
+> A `string` model is always treated as XML content, never as a path. To render an XML file from your application,
+> pass the `ResourceKey` from `resolve()`.
+
+The document is the root node for [`[#recurse]` and `[#visit]`](https://freemarker.apache.org/docs/xgui_declarative.html),
+so you can write a macro for each element you want to handle:
+
+```ftl
+[#-- @ftlvariable name="doc" type="freemarker.ext.dom.NodeModel" --]
+
+[#recurse]
+
+[#macro article]<article>[#recurse]</article>[/#macro]
+[#macro title]<h1>${.node}</h1>[/#macro]
+[#macro para]<p>[#recurse]</p>[/#macro]
+[#macro "@text"]${.node}[/#macro]
+```
+
+The document is also available as `doc`, if you prefer to [read the values directly](https://freemarker.apache.org/docs/xgui_imperative.html):
+
+```ftl
+<h1>${doc.article.title}</h1>
+
+[#list doc.article.para as para]
+  <p>${para}</p>
+[/#list]
+```
+
+When the XML is the model, `doc` is the only variable you have, alongside `portal`. Comments and processing
+instructions are removed from the document. External entities and DTDs are never loaded, so the XML can safely come
+from editors or third parties.
+
 ### The `portal` object
 
 The following utility functions are made available in the

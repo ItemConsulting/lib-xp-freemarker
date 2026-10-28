@@ -10,6 +10,7 @@ import com.enonic.xp.resource.ResourceService;
 import com.enonic.xp.script.bean.BeanContext;
 import com.enonic.xp.script.bean.ScriptBean;
 import com.enonic.xp.server.RunMode;
+import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
@@ -17,6 +18,7 @@ import freemarker.template.TemplateModelException;
 import no.api.freemarker.java8.Java8ObjectWrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.xml.sax.SAXException;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -41,6 +43,7 @@ public class FreemarkerScriptBean implements ScriptBean {
   private final Configuration configuration;
   private Supplier<PortalRequest> requestSupplier;
   private Supplier<LocaleService> localeSupplier;
+  private XmlParser xmlParser;
 
   /**
    * Constructs a new FreemarkerScriptBean and initializes the FreeMarker configuration.
@@ -86,6 +89,7 @@ public class FreemarkerScriptBean implements ScriptBean {
     Supplier<ResourceService> resourceServiceSupplier = context.getService(ResourceService.class);
     Supplier<PortalUrlService> portalUrlServiceSupplier = context.getService(PortalUrlService.class);
     ApplicationKey applicationKey = context.getApplicationKey();
+    this.xmlParser = new XmlParser(resourceServiceSupplier);
 
     try {
       FreemarkerPortalObject portal = new FreemarkerPortalObjectImpl(portalUrlServiceSupplier, this.localeSupplier, this.requestSupplier, applicationKey);
@@ -120,6 +124,19 @@ public class FreemarkerScriptBean implements ScriptBean {
    */
   public FreemarkerProcessor newProcessor() {
     return new FreemarkerProcessor(configuration, requestSupplier.get(), localeSupplier.get());
+  }
+
+  /**
+   * Parse an XML document, to be passed to {@link FreemarkerProcessor#processXml(String, NodeModel)} or
+   * {@link FreemarkerProcessor#processXmlInline(String, NodeModel, String)}.
+   * @param source The XML as a string, a {@link ResourceKey} pointing to an XML file, or a
+   *               {@link com.google.common.io.ByteSource}
+   * @return The parsed XML document
+   * @throws IOException If an error occurs reading the XML
+   * @throws SAXException If the XML is not well-formed
+   */
+  public NodeModel parseXml(Object source) throws IOException, SAXException {
+    return xmlParser.parse(source);
   }
 
   /**

@@ -8,6 +8,7 @@ import com.enonic.xp.portal.RenderMode;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.script.ScriptValue;
 import com.enonic.xp.site.Site;
+import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
@@ -109,6 +110,41 @@ class FreemarkerProcessorTest {
     assertThrows(IllegalArgumentException.class, () -> processor.process(VIEW, model));
 
     verify(model, times(2)).hasMember("portal");
+  }
+
+  @Test
+  void shouldExposeXmlDocumentAsDoc() throws Throwable {
+    serveTemplate("<h1>${doc.article.title}</h1>");
+
+    String result = processor().processXml(VIEW, xml("<article><title>Hello</title></article>"));
+
+    assertEquals("<h1>Hello</h1>", result);
+  }
+
+  @Test
+  void shouldUseXmlDocumentAsRootNodeForRecurse() throws Throwable {
+    String template = """
+      <#recurse><#macro article><article><#recurse></article></#macro>\
+      <#macro title><h1>${.node}</h1></#macro>\
+      <#macro para><p><#recurse></p></#macro>\
+      <#macro "@text">${.node?trim}</#macro>""";
+
+    String result = processor().processXmlInline(template, xml("<article><title>Hello</title><para>World</para></article>"), "xml.ftl");
+
+    assertEquals("<article><h1>Hello</h1><p>World</p></article>", result);
+  }
+
+  @Test
+  void shouldMakePortalAvailableWhenRenderingXml() throws Throwable {
+    configuration.setSharedVariable("portal", "the portal");
+
+    String result = processor().processXmlInline("${portal} ${doc.article}", xml("<article>Hi</article>"), "xml.ftl");
+
+    assertEquals("the portal Hi", result);
+  }
+
+  private static NodeModel xml(String xml) throws Exception {
+    return new XmlParser(() -> null).parse(xml);
   }
 
   @Test

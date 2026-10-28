@@ -6,10 +6,12 @@ import com.enonic.xp.portal.RenderMode;
 import com.enonic.xp.resource.ResourceKey;
 import com.enonic.xp.script.ScriptValue;
 import freemarker.core.Environment;
+import freemarker.ext.dom.NodeModel;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 import freemarker.template.TemplateExceptionHandler;
+import freemarker.template.TemplateNodeModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -17,6 +19,7 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * A processor for rendering FreeMarker templates.
@@ -43,6 +46,11 @@ public class FreemarkerProcessor {
   }
 
   /**
+   * The name of the variable that holds the XML document when rendering with an XML document as the model.
+   */
+  public static final String XML_DOCUMENT_VARIABLE = "doc";
+
+  /**
    * Process a template found in the build
    *
    * @param view A URI pointing to the view (Most likely {@link ResourceKey}.getUri() object)
@@ -52,30 +60,23 @@ public class FreemarkerProcessor {
    * @throws TemplateException If an error occurs processing the template
    */
   public String process(String view, ScriptValue model) throws IOException, TemplateException {
-    if (model.hasMember("portal")) {
-      throw new IllegalArgumentException("Model must not contain a 'portal' member");
-    }
+    requireNoPortalMember(model);
 
-    StringWriter writer = new StringWriter();
+    return processView(view, model.getMap(), null);
+  }
 
-    try {
-      Template template = configuration.getTemplate(view);
-      Environment environment = template.createProcessingEnvironment(model.getMap(), writer);
-      Locale locale = getLocaleFromPortalRequest();
-      if (locale != null) {
-        environment.setLocale(locale);
-      }
-      environment.process();
-    } catch (final TemplateException e) {
-      // Don't throw exception with the HTML debug handler. It will instead render the error as part of the HTML
-      if (configuration.getTemplateExceptionHandler() == TemplateExceptionHandler.HTML_DEBUG_HANDLER) {
-        logger.error("Error processing template: {}", e.getMessage(), e);
-      } else {
-        throw e;
-      }
-    }
-
-    return writer.toString();
+  /**
+   * Process a template found in the build, with an XML document as the model. The document is the root node for
+   * {@code #recurse} and {@code #visit}, and is also available as the variable {@value #XML_DOCUMENT_VARIABLE}.
+   *
+   * @param view A URI pointing to the view (Most likely {@link ResourceKey}.getUri() object)
+   * @param xml The XML document, see {@link XmlParser}
+   * @return The processed template as a string
+   * @throws IOException If an error occurs reading the template
+   * @throws TemplateException If an error occurs processing the template
+   */
+  public String processXml(String view, NodeModel xml) throws IOException, TemplateException {
+    return processView(view, Map.of(XML_DOCUMENT_VARIABLE, xml), xml);
   }
 
   /**
@@ -89,20 +90,48 @@ public class FreemarkerProcessor {
    * @throws TemplateException If an error occurs processing the template
    */
   public String processInline(String source, ScriptValue model, String name) throws IOException, TemplateException {
-    if (model.hasMember("portal")) {
-      throw new IllegalArgumentException("Model must not contain a 'portal' member");
-    }
+    requireNoPortalMember(model);
 
+    return processInline(source, model.getMap(), null, name);
+  }
+
+  /**
+   * Process an inline template, with an XML document as the model. The document is the root node for
+   * {@code #recurse} and {@code #visit}, and is also available as the variable {@value #XML_DOCUMENT_VARIABLE}.
+   *
+   * @param source The template as a string
+   * @param xml The XML document, see {@link XmlParser}
+   * @param name A name used for the template in logs or debugging
+   * @return The processed template as a string
+   * @throws IOException If an error occurs reading the template
+   * @throws TemplateException If an error occurs processing the template
+   */
+  public String processXmlInline(String source, NodeModel xml, String name) throws IOException, TemplateException {
+    return processInline(source, Map.of(XML_DOCUMENT_VARIABLE, xml), xml, name);
+  }
+
+  private String processView(String view, Map<String, Object> dataModel, TemplateNodeModel rootNode) throws IOException, TemplateException {
     StringWriter writer = new StringWriter();
 
     try {
-      Template template = new Template(name, source, configuration);
-      Environment environment = template.createProcessingEnvironment(model.getMap(), writer);
-      Locale locale = getLocaleFromPortalRequest();
-      if (locale != null) {
-        environment.setLocale(locale);
+      processTemplate(configuration.getTemplate(view), dataModel, rootNode, writer);
+    } catch (final TemplateException e) {
+      // Don't throw exception with the HTML debug handler. It will instead render the error as part of the HTML
+      if (configuration.getTemplateExceptionHandler() == TemplateExceptionHandler.HTML_DEBUG_HANDLER) {
+        logger.error("Error processing template: {}", e.getMessage(), e);
+      } else {
+        throw e;
       }
-      environment.process();
+    }
+
+    return writer.toString();
+  }
+
+  private String processInline(String source, Map<String, Object> dataModel, TemplateNodeModel rootNode, String name) throws IOException, TemplateException {
+    StringWriter writer = new StringWriter();
+
+    try {
+      processTemplate(new Template(name, source, configuration), dataModel, rootNode, writer);
     } catch (final TemplateException e) {
       // Throw exception on the live site, but allow rendering of HTML error message (done in writer) in Content Studio.
       // Only swallow when we know we are in Content Studio: outside a portal request (a task, for instance) there is
@@ -115,6 +144,24 @@ public class FreemarkerProcessor {
     }
 
     return writer.toString();
+  }
+
+  private void processTemplate(Template template, Map<String, Object> dataModel, TemplateNodeModel rootNode, StringWriter writer) throws IOException, TemplateException {
+    Environment environment = template.createProcessingEnvironment(dataModel, writer);
+    Locale locale = getLocaleFromPortalRequest();
+    if (locale != null) {
+      environment.setLocale(locale);
+    }
+    if (rootNode != null) {
+      environment.setCurrentVisitorNode(rootNode);
+    }
+    environment.process();
+  }
+
+  private static void requireNoPortalMember(ScriptValue model) {
+    if (model.hasMember("portal")) {
+      throw new IllegalArgumentException("Model must not contain a 'portal' member");
+    }
   }
 
   /**
